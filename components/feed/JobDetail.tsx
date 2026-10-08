@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Chip } from "@/components/Chip";
 import { JobActions } from "@/components/feed/JobActions";
 import { NgChip, ScamChip, ScoreBadge } from "@/components/feed/JobChips";
-import type { FeedItem } from "@/lib/feed";
+import { ngEvidence, type FeedItem } from "@/lib/feed";
 import { formatPostedAgo, sourceName } from "@/lib/util";
 
 export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: boolean; backHref?: string }) {
@@ -27,7 +27,7 @@ export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: 
             {job.company || "Company not named"} · {formatPostedAgo(job.posted_at)}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <NgChip eligible={job.ng_eligible} reason={job.ng_reason} />
+            <NgChip eligible={job.ng_eligible} reason={job.ng_reason} evidence={ngEvidence(job)} />
             <ScamChip level={job.scam_level} score={job.scam_score} />
             <Chip tone="neutral" symbol={null}>
               Source: {source}
@@ -48,7 +48,11 @@ export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: 
         </div>
         <div className="sm:col-span-2">
           <dt className="font-semibold">Can you apply from Nigeria?</dt>
-          <dd className="text-muted">{job.ng_reason || "Not checked"}</dd>
+          <dd className="text-muted">
+            {job.ng_eligible === true ? "Yes. " : job.ng_eligible === false ? "No. " : "Not stated. "}
+            {job.ng_reason || "Not checked"}
+            {job.ng_method === "ai" && " (checked by AI reading the post; the quote is copied from it)"}
+          </dd>
         </div>
       </dl>
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isHiddenByDefault, loadFeed, sortFeed, type FeedSort } from "@/lib/feed";
+import { countUnclear, loadFeed, ngEvidence, sortFeed, type FeedSort } from "@/lib/feed";
 import { RunButtons } from "@/components/feed/RunButtons";
 import { JobDetail } from "@/components/feed/JobDetail";
 import { NgChip, ScamChip, ScoreBadge } from "@/components/feed/JobChips";
@@ -10,12 +10,12 @@ import { formatPostedAgo, sourceName } from "@/lib/util";
 
 export const dynamic = "force-dynamic";
 
-type Search = { job?: string; sort?: string; show?: string };
+type Search = { job?: string; sort?: string; check?: string };
 
 function href(params: Search): string {
   const qs = new URLSearchParams();
   if (params.sort && params.sort !== "score") qs.set("sort", params.sort);
-  if (params.show === "all") qs.set("show", "all");
+  if (params.check === "1") qs.set("check", "1");
   if (params.job) qs.set("job", params.job);
   const s = qs.toString();
   return s ? `/?${s}` : "/";
@@ -29,12 +29,11 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   if (!user) redirect("/login");
 
   const sort: FeedSort = searchParams.sort === "newest" ? "newest" : "score";
-  const showAll = searchParams.show === "all";
+  const showUnclear = searchParams.check === "1";
 
-  const all = await loadFeed(supabase, user.id);
-  const hiddenCount = all.filter(isHiddenByDefault).length;
-  const items = sortFeed(showAll ? all : all.filter((i) => !isHiddenByDefault(i)), sort);
-  const selected = searchParams.job ? all.find((i) => i.job.id === searchParams.job) ?? null : null;
+  const [loaded, unclearCount] = await Promise.all([loadFeed(supabase, user.id, showUnclear), countUnclear(supabase)]);
+  const items = sortFeed(loaded, sort);
+  const selected = searchParams.job ? loaded.find((i) => i.job.id === searchParams.job) ?? null : null;
 
   let hasKit = false;
   if (selected) {
@@ -46,7 +45,9 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
     hasKit = (count ?? 0) > 0;
   }
 
-  const base: Search = { sort, show: showAll ? "all" : undefined };
+  const base: Search = { sort, check: showUnclear ? "1" : undefined };
+  const pill = (active: boolean) =>
+    `rounded-full border px-3 py-1.5 ${active ? "border-ink bg-ink text-surface" : "border-line"}`;
 
   return (
     <div className="space-y-4">
@@ -54,7 +55,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
         <div>
           <h1 className="text-3xl font-extrabold">Job feed</h1>
           <p className="mt-1 text-sm text-muted">
-            Remote assistant roles from public job boards, ranked against your profile.
+            Only remote assistant roles that say they are open to applicants in Nigeria, ranked against your profile.
           </p>
         </div>
         <RunButtons />
@@ -62,33 +63,38 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
 
       <div className={`flex flex-wrap items-center gap-2 text-sm ${selected ? "hidden lg:flex" : ""}`}>
         <span className="font-semibold">Sort:</span>
-        <Link
-          href={href({ ...base, sort: "score" })}
-          aria-current={sort === "score" ? "true" : undefined}
-          className={`rounded-full border px-3 py-1.5 ${sort === "score" ? "border-ink bg-ink text-surface" : "border-line"}`}
-        >
+        <Link href={href({ ...base, sort: "score" })} aria-current={sort === "score" ? "true" : undefined} className={pill(sort === "score")}>
           Best match
         </Link>
-        <Link
-          href={href({ ...base, sort: "newest" })}
-          aria-current={sort === "newest" ? "true" : undefined}
-          className={`rounded-full border px-3 py-1.5 ${sort === "newest" ? "border-ink bg-ink text-surface" : "border-line"}`}
-        >
+        <Link href={href({ ...base, sort: "newest" })} aria-current={sort === "newest" ? "true" : undefined} className={pill(sort === "newest")}>
           Newest
         </Link>
         <span className="mx-1 hidden h-5 w-px bg-line sm:inline-block" aria-hidden="true" />
-        <Link href={href({ ...base, show: showAll ? undefined : "all" })} className="rounded-full border border-line px-3 py-1.5">
-          {showAll ? `Hide ${hiddenCount} risky or closed jobs` : `Show ${hiddenCount} hidden jobs`}
+        <Link
+          href={href({ ...base, check: showUnclear ? undefined : "1" })}
+          role="switch"
+          aria-checked={showUnclear}
+          className={`inline-flex items-center gap-2 ${pill(showUnclear)}`}
+        >
+          <span aria-hidden="true">{showUnclear ? "☑" : "☐"}</span>
+          Show jobs that need checking ({unclearCount})
         </Link>
       </div>
+
+      {showUnclear && (
+        <p className={`rounded-lg border-2 border-[var(--warn-fg)] bg-[var(--warn-bg)] px-3 py-2 text-sm text-[var(--warn-fg)] ${selected ? "hidden lg:block" : ""}`}>
+          ! Jobs marked &quot;Location not stated&quot; did not say who can apply. Read the original post and make sure Nigeria is
+          allowed before you spend time on them.
+        </p>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <section aria-label="Jobs" className={selected ? "hidden lg:block" : ""}>
           {items.length === 0 ? (
             <div className="card p-6 text-sm">
-              <p className="font-semibold">No jobs yet.</p>
+              <p className="font-semibold">No jobs open to Nigeria yet.</p>
               <p className="mt-1 text-muted">
-                Press &quot;Fetch new jobs&quot;, then &quot;Score new jobs&quot;. Jobs also arrive every morning on their own.
+                Press &quot;Fetch new jobs&quot;, then &quot;Score new jobs&quot;. New jobs also arrive on their own several times a day.
               </p>
             </div>
           ) : (
@@ -109,7 +115,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
                           {job.company || "Company not named"} · {sourceName(job.source)} · {formatPostedAgo(job.posted_at)}
                         </p>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          <NgChip eligible={job.ng_eligible} reason={job.ng_reason} />
+                          <NgChip eligible={job.ng_eligible} reason={job.ng_reason} evidence={ngEvidence(job)} />
                           {job.scam_level !== "low" && <ScamChip level={job.scam_level} />}
                           {application && <Chip tone="info">{application.stage}</Chip>}
                         </div>

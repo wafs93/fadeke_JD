@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     type JobLite = { id: string; title: string; company: string; ng_eligible: boolean | null; scam_level: string };
     const good = (matches ?? [])
       .map((m) => ({ score: m.score as number, job: (Array.isArray(m.job) ? m.job[0] : m.job) as JobLite | null }))
-      .filter((m) => m.job && m.job.ng_eligible !== false && m.job.scam_level !== "high");
+      .filter((m) => m.job && m.job.ng_eligible === true && m.job.scam_level !== "high");
 
     if (!good.length && !(due ?? []).length) continue;
 

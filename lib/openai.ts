@@ -14,6 +14,8 @@ export function getOpenAI(): OpenAI {
 }
 
 export const MODEL = process.env.OPENAI_MODEL || "gpt-4o";
+/** Cheap model for small yes/no reading tasks (location eligibility). */
+export const MODEL_SMALL = process.env.OPENAI_MODEL_SMALL || "gpt-4o-mini";
 
 /** Turns any error from an OpenAI call into a clear message. Auth and
  * rate-limit failures (401/403/429) are prefixed "OpenAI: " so callers can
@@ -34,7 +36,8 @@ export async function chatJson<T>(
   system: string,
   user: string,
   parse: (raw: unknown) => { success: true; data: T } | { success: false; error: { message: string } },
-  temperature = 0.3
+  temperature = 0.3,
+  model = MODEL
 ): Promise<T> {
   const openai = getOpenAI();
   let lastError = "unknown error";
@@ -42,7 +45,7 @@ export async function chatJson<T>(
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const completion = await openai.chat.completions.create({
-        model: MODEL,
+        model,
         temperature,
         response_format: { type: "json_object" },
         messages: [

@@ -90,7 +90,7 @@ export function ScamChecker() {
               <h2 className="text-lg font-bold">Result</h2>
               <div className="flex flex-wrap gap-2">
                 <ScamChip level={result.scam.level} score={result.scam.score} />
-                <NgChip eligible={result.ng.eligible} reason={result.ng.reason} />
+                <NgChip eligible={result.ng.eligible} reason={result.ng.reason} evidence={result.ng.evidence} />
               </div>
               <p className="text-sm text-muted">Nigeria: {result.ng.reason}</p>
               {result.scam.flags.length === 0 ? (

@@ -1,12 +1,33 @@
 import { Chip } from "@/components/Chip";
 import type { ScamLevel } from "@/lib/types";
 
-export function NgChip({ eligible, reason }: { eligible: boolean | null; reason?: string | null }) {
-  if (eligible === true) return <Chip tone="good" title={reason ?? undefined}>Open to Nigeria</Chip>;
+function shorten(s: string, max = 60): string {
+  const t = s.replace(/\s+/g, " ").trim();
+  return t.length > max ? `${t.slice(0, max - 1)}…` : t;
+}
+
+/** Nigeria eligibility. Open jobs show the phrase from the post so she can
+ * check it herself. */
+export function NgChip({
+  eligible,
+  reason,
+  evidence,
+}: {
+  eligible: boolean | null;
+  reason?: string | null;
+  evidence?: string | null;
+}) {
+  if (eligible === true) {
+    return (
+      <Chip tone="good" title={reason ?? undefined}>
+        {evidence ? `Open: ‘${shorten(evidence)}’` : "Open to Nigeria"}
+      </Chip>
+    );
+  }
   if (eligible === false) return <Chip tone="bad" title={reason ?? undefined}>Not open to Nigeria</Chip>;
   return (
-    <Chip tone="info" symbol="?" title={reason ?? undefined}>
-      Check location
+    <Chip tone="warn" title={reason ?? undefined}>
+      Location not stated. Check before applying.
     </Chip>
   );
 }

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "seed": "node --env-file=.env.local scripts/seed.mjs",
     "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
-    "check:sources": "node --import tsx scripts/check-sources.mjs"
+    "check:sources": "node --import tsx scripts/check-sources.mjs",
+    "reevaluate": "node --env-file=.env.local --conditions=react-server --import tsx scripts/reevaluate-eligibility.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.5.2",

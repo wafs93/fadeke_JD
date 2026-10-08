@@ -21,6 +21,8 @@ Next.js 14 (App Router) · TypeScript · Tailwind · Supabase (Postgres, Auth, R
 
 #### Migration notes
 
+- **002 (Nigeria evidence):** run [supabase/migrations/002_ng_evidence.sql](supabase/migrations/002_ng_evidence.sql), then `npm run reevaluate`. It adds `jobs.ng_evidence`, `ng_method` and `ng_checked_at`. Until then the app still works: the evidence quote is kept in `ng_reason`, but the AI location check is paused, because there is nowhere to record that a job was already checked.
+
 - `schema.sql` creates `profiles`, `experiences`, `education`, `jobs`, `matches`, `kits`, `applications`, plus a small `source_runs` table. `source_runs` stores the last fetch time per job source and enforces each provider's rate limit.
 - It adds these columns beyond the spec: `experiences.sort_order`, `profiles.updated_at` and `applications.updated_at`. It also adds `unique (user_id, job_id)` on `applications`, so each job has one tracker card.
 - RLS: every per-user table only allows `auth.uid() = user_id`. `jobs` and `source_runs` are readable by signed-in users and writable only by the service role (cron/fetcher).
@@ -88,9 +90,13 @@ The sandbox I built this in had no outbound network, so the adapters are written
 ### Filtering, eligibility and scams (rule-based, no AI cost)
 
 - **Relevance**: only VA-type titles are kept, plus her target titles from Profile ([lib/relevance.ts](lib/relevance.ts)).
-- **Open to Nigeria?** ([lib/eligibility.ts](lib/eligibility.ts)): `true` only if the post says worldwide, Nigeria or Africa. `false` if it names other countries only, or says "US only", "authorized to work in the US" and similar. Otherwise `null` ("Check location"). Every result carries a reason.
-- **Scam score** ([lib/scam.ts](lib/scam.ts)): weighted signals such as fees, cheques, gift cards or crypto, BVN/NIN/bank requests, Telegram/WhatsApp-only contact, no interview, unrealistic pay, personal email and reshipping. Each flag stores the matching text as evidence. 0–19 is low, 20–49 medium, 50+ high.
-- Jobs that are closed to Nigeria or high scam risk are hidden from the feed by default (one click shows them) and are never sent to GPT-4o.
+- **Open to Nigeria?** ([lib/eligibility.ts](lib/eligibility.ts)) gives every job one of three states, stored in `jobs.ng_eligible` (`true` open, `false` closed, `null` unclear), with `ng_reason` and the quoted `ng_evidence`:
+  - **open**: only explicit wording such as worldwide, anywhere, global, all countries, Africa, Nigeria, Lagos, or a country list that includes Nigeria.
+  - **closed**: anything that rules her out, including country-only wording, "must reside/be located in", work authorisation, work permits, no visa sponsorship, citizenship, US or Australian hours (EST, PST, "PT or ET"), on-site or hybrid, a place list without Nigeria, title tags like "(US)", and Himalayas time-zone ranges that leave out UTC+1. Closed signals always win.
+  - **unclear**: remote with no location, or EMEA/Europe only. A small model (`OPENAI_MODEL_SMALL`, default gpt-4o-mini) reads each unclear post once. Its answer is accepted only if it quotes words that really are in the post and support that answer. Otherwise the job stays unclear.
+- The feed shows **only open jobs**, each with its evidence ("Open: 'work from anywhere'"). "Show jobs that need checking" adds unclear jobs with a warning. Closed and high-scam-risk jobs never appear, and only open jobs are scored with GPT-4o.
+- Himalayas is queried with `country=Nigeria`, so it returns jobs whose restrictions include Nigeria or that have none. A job with no restrictions is shown as "Worldwide (no location restrictions listed on Himalayas)".
+- `npm run reevaluate` re-checks every stored job (`-- --dry-run`, `-- --no-ai`). Run it after changing the rules.
 
 ### Matching (GPT-4o)
 

@@ -77,8 +77,11 @@ create table if not exists jobs (
   region_text text not null default '',
   posted_at timestamptz,
   salary_text text,
-  ng_eligible boolean,
+  ng_eligible boolean,          -- true = open, false = closed, null = unclear
   ng_reason text,
+  ng_evidence text,             -- phrase quoted from the post
+  ng_method text,               -- 'rules' or 'ai'
+  ng_checked_at timestamptz,
   scam_score int not null default 0,
   scam_flags jsonb not null default '[]'::jsonb,
   scam_level text not null default 'low' check (scam_level in ('low', 'medium', 'high')),
@@ -87,6 +90,12 @@ create table if not exists jobs (
 );
 
 create index if not exists jobs_posted_at_idx on jobs (posted_at desc);
+create index if not exists jobs_ng_eligible_idx on jobs (ng_eligible, posted_at desc);
+
+-- Columns added after the first release (no-ops on a fresh install).
+alter table jobs add column if not exists ng_evidence text;
+alter table jobs add column if not exists ng_method text;
+alter table jobs add column if not exists ng_checked_at timestamptz;
 
 -- ---------------------------------------------------------------------------
 -- source_runs (fetch cache / rate-limit bookkeeping, one row per source)

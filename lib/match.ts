@@ -21,7 +21,7 @@ Rules:
 - Use ONLY the facts in PROFILE. Never assume skills, tools, years or results that are not written there.
 - Unconfirmed experience counts only as "has held that job title"; never credit duties for it.
 - Score 0-100: required skills and duties 45, tools 15, experience level 20, practical fit (timezone, hours, language, location rules) 20.
-- If the post says it is limited to countries that exclude Nigeria, score no higher than 20 and say why in gaps.
+- The job has already been checked as open to applicants in Nigeria. If you still see a location rule that excludes Nigeria, score no higher than 20 and say why in gaps.
 - "reasons": 2-4 short sentences (under 20 words) on why this is or is not a good fit.
 - "have": requirements from the post that PROFILE clearly meets, each naming the profile fact (for example "Calendar management: manages founder's calendar at Oluya Imagery").
 - "gaps": requirements from the post that PROFILE does not show. Plain, kind wording.
@@ -50,9 +50,8 @@ export interface MatchRunSummary {
 }
 
 /**
- * Scores up to `limit` unscored jobs for one user, newest first. Skips jobs
- * already known to be closed to Nigeria or high scam risk (no point paying to
- * score them). Works with either the user's own client (RLS) or the admin client.
+ * Scores up to `limit` unscored jobs for one user, newest first. Only jobs
+ * marked open to Nigeria are scored, and high scam risk ones are skipped. Works with either the user's own client (RLS) or the admin client.
  */
 export async function runMatchForUser(supabase: SupabaseClient, userId: string, limit: number): Promise<MatchRunSummary> {
   const bundle = await loadProfileBundle(supabase, userId);
@@ -64,7 +63,8 @@ export async function runMatchForUser(supabase: SupabaseClient, userId: string, 
     supabase
       .from("jobs")
       .select("id, title, company, region_text, description, salary_text, ng_eligible, scam_level, posted_at")
-      .or("ng_eligible.is.null,ng_eligible.eq.true")
+      // Only jobs she can apply for from Nigeria; never pay to score the rest.
+      .eq("ng_eligible", true)
       .neq("scam_level", "high")
       .gte("fetched_at", since)
       .order("posted_at", { ascending: false, nullsFirst: false })

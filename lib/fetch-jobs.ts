@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { enabledSources } from "@/lib/sources";
 import { isRelevantTitle } from "@/lib/relevance";
 import { checkNigeriaEligibility } from "@/lib/eligibility";
+import { runNgAiChecks, type AiCheckSummary } from "@/lib/ng-ai";
 import { assessScam } from "@/lib/scam";
 import type { RawJob } from "@/lib/types";
 
@@ -25,6 +26,9 @@ export function enrichJob(job: RawJob) {
     description: job.description.slice(0, 20000),
     ng_eligible: ng.eligible,
     ng_reason: ng.reason,
+    ng_evidence: ng.evidence,
+    ng_method: "rules",
+    ng_checked_at: new Date().toISOString(),
     scam_score: scam.score,
     scam_flags: scam.flags,
     scam_level: scam.level,
@@ -32,12 +36,61 @@ export function enrichJob(job: RawJob) {
   };
 }
 
+type EnrichedJob = ReturnType<typeof enrichJob>;
+
+const NG_EXTRA_COLUMNS = ["ng_evidence", "ng_method", "ng_checked_at"] as const;
+
+/** Drops the migration-002 columns, for databases that don't have them yet. */
+export function withoutNgExtras<T extends Record<string, unknown>>(row: T): Omit<T, (typeof NG_EXTRA_COLUMNS)[number]> {
+  const copy: Record<string, unknown> = { ...row };
+  for (const c of NG_EXTRA_COLUMNS) delete copy[c];
+  return copy as Omit<T, (typeof NG_EXTRA_COLUMNS)[number]>;
+}
+
+export function isMissingColumnError(error: { code?: string; message?: string } | null): boolean {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || /column .* does not exist|could not find the .* column/i.test(error.message ?? "")));
+}
+
+type Admin = ReturnType<typeof createAdminClient>;
+
+/**
+ * Upserts jobs without undoing earlier AI decisions: when the rules still say
+ * "unclear" for a job the small model has already read, its verdict is kept.
+ */
+export async function saveJobs(admin: Admin, source: string, rows: EnrichedJob[]): Promise<void> {
+  const ids = rows.map((r) => r.external_id);
+  const { data: existing, error: readErr } = await admin
+    .from("jobs")
+    .select("external_id, ng_eligible, ng_reason, ng_evidence, ng_method, ng_checked_at")
+    .eq("source", source)
+    .in("external_id", ids);
+
+  let merged: Record<string, unknown>[] = rows;
+  if (!readErr) {
+    const prior = new Map((existing ?? []).map((e: { external_id: string }) => [e.external_id, e as Record<string, unknown>]));
+    merged = rows.map((row) => {
+      const old = prior.get(row.external_id);
+      if (old && old.ng_method === "ai" && row.ng_eligible === null) {
+        return { ...row, ng_eligible: old.ng_eligible, ng_reason: old.ng_reason, ng_evidence: old.ng_evidence, ng_method: "ai", ng_checked_at: old.ng_checked_at };
+      }
+      return row;
+    });
+  }
+
+  let { error } = await admin.from("jobs").upsert(merged, { onConflict: "source,external_id" });
+  if (isMissingColumnError(error)) {
+    ({ error } = await admin.from("jobs").upsert(merged.map(withoutNgExtras), { onConflict: "source,external_id" }));
+  }
+  if (error) throw new Error(`saving jobs: ${error.message}`);
+}
+
 /**
  * Fetches every enabled source that is not inside its rate-limit window,
  * keeps relevant recent VA-type roles, and upserts them into the shared jobs
  * table. Uses the service role (jobs are not per-user).
  */
-export async function runFetch(): Promise<{ ok: boolean; sources: SourceSummary[] }> {
+export async function runFetch(): Promise<{ ok: boolean; sources: SourceSummary[]; ai: AiCheckSummary }> {
+  const started = Date.now();
   const admin = createAdminClient();
   const sources = enabledSources();
 
@@ -78,12 +131,7 @@ export async function runFetch(): Promise<{ ok: boolean; sources: SourceSummary[
           return isRelevantTitle(j.title, extraTitles);
         });
 
-        if (kept.length) {
-          const { error } = await admin
-            .from("jobs")
-            .upsert(kept.map(enrichJob), { onConflict: "source,external_id" });
-          if (error) throw new Error(`saving jobs: ${error.message}`);
-        }
+        if (kept.length) await saveJobs(admin, source.id, kept.map(enrichJob));
 
         await admin.from("source_runs").upsert({
           source: source.id,
@@ -108,5 +156,8 @@ export async function runFetch(): Promise<{ ok: boolean; sources: SourceSummary[
     })
   );
 
-  return { ok: results.every((r) => r.status !== "error"), sources: results };
+  // Read new "unclear" posts with the small model while time allows (routes have 60s).
+  const ai = await runNgAiChecks(admin, 30, started + 50_000);
+
+  return { ok: results.every((r) => r.status !== "error"), sources: results, ai };
 }

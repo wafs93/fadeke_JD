@@ -11,6 +11,7 @@ import { JobActions } from "@/components/feed/JobActions";
 import { NgChip, ScamChip, ScoreBadge } from "@/components/feed/JobChips";
 import { Chip } from "@/components/Chip";
 import { sourceName } from "@/lib/util";
+import { ngEvidence } from "@/lib/feed";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -47,12 +48,23 @@ export default async function KitPage({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{job.title}</h1>
           <p className="text-muted">{job.company || "Company not named"}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <NgChip eligible={job.ng_eligible} reason={job.ng_reason} />
+            <NgChip eligible={job.ng_eligible} reason={job.ng_reason} evidence={ngEvidence(job)} />
             <ScamChip level={job.scam_level} />
             {application && <Chip tone="info">{application.stage}</Chip>}
           </div>
         </div>
       </header>
+
+      {job.ng_eligible === false && (
+        <p role="alert" className="card border-2 border-[var(--bad-fg)] p-3 text-sm font-semibold text-[var(--bad-fg)]">
+          ✕ This job is not open to applicants in Nigeria ({job.ng_reason}). It no longer appears in your feed.
+        </p>
+      )}
+      {job.ng_eligible === null && (
+        <p role="alert" className="card border-2 border-[var(--warn-fg)] p-3 text-sm font-semibold text-[var(--warn-fg)]">
+          ! Location not stated. Check the original post allows Nigeria before applying.
+        </p>
+      )}
 
       {job.scam_level === "high" && (
         <p role="alert" className="card border-2 border-[var(--bad-fg)] p-3 text-sm font-semibold text-[var(--bad-fg)]">
@@ -89,7 +101,7 @@ export default async function KitPage({ params }: { params: { id: string } }) {
         </section>
       )}
 
-      {!kit ? (
+      {!kit && job.ng_eligible === false ? null : !kit ? (
         <section className="card p-6">
           <h2 className="text-lg font-bold">No kit yet</h2>
           <p className="mt-1 text-sm text-muted">

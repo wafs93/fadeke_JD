@@ -68,6 +68,10 @@ export interface Job {
   salary_text: string | null;
   ng_eligible: boolean | null;
   ng_reason: string | null;
+  /** Added by migration 002; absent until it has been run. */
+  ng_evidence?: string | null;
+  ng_method?: "rules" | "ai" | null;
+  ng_checked_at?: string | null;
   scam_score: number;
   scam_flags: ScamFlag[];
   scam_level: ScamLevel;
