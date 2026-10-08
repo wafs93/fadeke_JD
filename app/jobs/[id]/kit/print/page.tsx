@@ -57,7 +57,7 @@ function CvPrint({ text }: { text: string }) {
     if (!line) return;
     if (line.startsWith("## ")) {
       blocks.push(
-        <h2 key={i} className="mb-1 mt-4 border-b border-gray-400 pb-0.5 text-sm font-bold uppercase tracking-wide">
+        <h2 key={i} className="mb-1 mt-4 border-b border-gray-400 pb-0.5 font-sans text-[13pt] font-bold">
           {line.slice(3)}
         </h2>
       );
@@ -79,7 +79,7 @@ function CvPrint({ text }: { text: string }) {
 
   return (
     <article className="text-[11pt] leading-snug">
-      <h1 className="text-center text-2xl font-bold">
+      <h1 className="text-center font-sans text-2xl font-bold">
         <Marked text={name} />
       </h1>
       {contact && (
@@ -128,8 +128,8 @@ export default async function KitPrintPage({
   const placeholders = findPlaceholders(text);
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <div className="no-print flex flex-wrap items-center gap-3 border-b-[6px] border-[#111] bg-danfo px-4 py-3 text-[#111]">
+    <div className="min-h-dvh bg-white text-black">
+      <div className="no-print flex flex-wrap items-center gap-3 border-b border-line bg-tint px-4 py-3 text-ink">
         <PrintButton />
         <p className="text-sm font-semibold">
           In the print window, choose &quot;Save as PDF&quot; as the printer.

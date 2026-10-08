@@ -19,7 +19,7 @@ export function SignOutButton() {
           router.refresh();
         })
       }
-      className="min-h-[36px] rounded-full border-2 border-[#111] px-3 text-xs font-semibold hover:bg-black/10 disabled:opacity-50"
+      className="min-h-[44px] whitespace-nowrap rounded-full px-2.5 text-sm font-semibold text-ink hover:bg-raised disabled:opacity-50"
     >
       Sign out
     </button>

@@ -1,7 +1,7 @@
 export type ChipTone = "good" | "warn" | "bad" | "info" | "neutral";
 
-// Each tone carries a text symbol as well as a colour, so meaning never
-// depends on colour alone.
+// Every tone carries a symbol as well as a colour, so meaning never depends
+// on colour alone.
 const SYMBOL: Record<ChipTone, string> = {
   good: "✓",
   warn: "!",
@@ -25,15 +25,15 @@ export function Chip({
   return (
     <span
       title={title}
-      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold"
-      style={{
-        background: `var(--${tone}-bg)`,
-        color: `var(--${tone}-fg)`,
-        borderColor: `var(--${tone}-fg)`,
-      }}
+      className="inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+      style={{ background: `var(--${tone}-bg)`, color: `var(--${tone}-fg)` }}
     >
-      {mark && <span aria-hidden="true">{mark}</span>}
-      {children}
+      {mark && (
+        <span aria-hidden="true" className="shrink-0">
+          {mark}
+        </span>
+      )}
+      <span className="min-w-0 truncate">{children}</span>
     </span>
   );
 }

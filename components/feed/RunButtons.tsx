@@ -87,8 +87,8 @@ export function RunButtons() {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn-secondary" onClick={runFetch} disabled={pending}>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <button type="button" className="btn-primary" onClick={runFetch} disabled={pending}>
           {busy === "fetch" ? "Fetching…" : "Fetch new jobs"}
         </button>
         <button type="button" className="btn-secondary" onClick={runMatch} disabled={pending}>
@@ -96,7 +96,7 @@ export function RunButtons() {
         </button>
       </div>
       {lines.length > 0 && (
-        <ul role="status" aria-live="polite" className="space-y-0.5 text-sm text-muted">
+        <ul role="status" aria-live="polite" className="space-y-0.5 break-words text-sm text-muted">
           {lines.map((l, i) => (
             <li key={i}>{l}</li>
           ))}

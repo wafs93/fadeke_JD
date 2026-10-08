@@ -2,117 +2,232 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Palette. Every text/background pair used below meets WCAG AA (4.5:1),
+ * checked with the WCAG relative-luminance formula:
+ *   ink on page 15.1, muted on page 6.6, muted on tint 5.5,
+ *   white on rose 5.7, rose-strong on tint 5.6, lilac on page 4.8,
+ *   lilac-strong on tint 6.1, safe 4.7, caution 5.3, avoid 5.4.
+ * Rose (#C2255C) and lilac (#7C5CBF) are 4.4 and 4.0 on the tint, so text on
+ * the tint uses the -strong variants instead.
+ */
 :root {
-  --bg: #f7f6f2;
+  --bg: #fff5f8;
   --bg-elevated: #ffffff;
-  --bg-sunken: #efede7;
-  --border: #dedbd2;
-  --text: #1a1a1a;
-  --text-muted: #5c5a55;
-  --focus: #1a1a1a;
-  --danfo: #f2b705;
+  --bg-sunken: #fbeaf0;
+  --border: #f6d5e0;
+  --text: #3b1226;
+  --text-muted: #7a4a5e;
+  --tint: #fadce6;
+  --primary: #c2255c;
+  --on-primary: #ffffff;
+  --primary-strong: #a61e4d;
+  --accent: #7c5cbf;
+  --accent-strong: #5e3fa3;
+  --focus: #7c5cbf;
+  --shadow: 0 1px 2px rgba(194, 37, 92, 0.06), 0 4px 16px rgba(194, 37, 92, 0.08);
+  --ring-track: #fadce6;
 
-  --good-bg: #e3f4e8;
-  --good-fg: #145c2c;
-  --warn-bg: #fff1c7;
-  --warn-fg: #6b4a00;
-  --bad-bg: #fde4e1;
-  --bad-fg: #8f1d12;
-  --info-bg: #e3edfb;
-  --info-fg: #1c4587;
-  --neutral-bg: #ecebe6;
-  --neutral-fg: #3d3c38;
+  --good-bg: #e3f5ec;
+  --good-fg: #1f7a55;
+  --warn-bg: #fff1d6;
+  --warn-fg: #8a5a00;
+  --bad-bg: #fde3e1;
+  --bad-fg: #b3261e;
+  --info-bg: #efe8fa;
+  --info-fg: #5e3fa3;
+  --neutral-bg: #fadce6;
+  --neutral-fg: #3b1226;
+
+  --tabbar-h: 56px;
 }
 
 .dark {
-  --bg: #121212;
-  --bg-elevated: #1c1c1b;
-  --bg-sunken: #0c0c0c;
-  --border: #33322f;
-  --text: #f2f0ea;
-  --text-muted: #a9a69f;
-  --focus: #f2b705;
+  --bg: #1e0f18;
+  --bg-elevated: #2b1722;
+  --bg-sunken: #170b12;
+  --border: #4a2a3b;
+  --text: #fbe9f0;
+  --text-muted: #d9b4c5;
+  --tint: #3d1f2f;
+  --primary: #f48fb1;
+  --on-primary: #2b0f1c;
+  --primary-strong: #f48fb1;
+  --accent: #c3b0f0;
+  --accent-strong: #c3b0f0;
+  --focus: #c3b0f0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --ring-track: #4a2a3b;
 
-  --good-bg: #123821;
-  --good-fg: #9fe3b5;
-  --warn-bg: #3d2f05;
-  --warn-fg: #ffd866;
-  --bad-bg: #44140f;
-  --bad-fg: #ffb3a8;
-  --info-bg: #142a4a;
-  --info-fg: #a9c8f5;
-  --neutral-bg: #2a2a28;
-  --neutral-fg: #d6d3cc;
+  --good-bg: #143a2b;
+  --good-fg: #9be3bf;
+  --warn-bg: #3d2c06;
+  --warn-fg: #ffd486;
+  --bad-bg: #4d1915;
+  --bad-fg: #ffb4ab;
+  --info-bg: #2f2450;
+  --info-fg: #d2c2f7;
+  --neutral-bg: #3d1f2f;
+  --neutral-fg: #fbe9f0;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-x: hidden;
 }
 
-h1,
-h2,
+/* Headings: DM Serif Display has a single weight, so never fake-bold it. */
+h1:not(.font-sans),
+h2:not(.font-sans),
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-weight: 400 !important;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}
+
 h3,
 h4 {
-  font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 650;
 }
 
-/* Visible keyboard focus everywhere. */
+a {
+  text-underline-offset: 3px;
+}
+
+/* Visible keyboard focus everywhere, in lilac. */
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.danfo-band :focus-visible {
-  outline-color: #111111;
+  border-radius: 10px;
 }
 
 @layer components {
   .card {
-    @apply rounded-xl border border-line bg-raised;
+    @apply rounded-2xl border border-line bg-raised;
+    box-shadow: var(--shadow);
   }
 
   .btn {
-    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 py-2 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
   }
 
-  /* Primary: black on danfo yellow, the same pairing as the header. */
   .btn-primary {
-    @apply btn border-2 border-[#111] bg-danfo text-[#111] hover:bg-[#ffc927];
+    @apply btn bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-strong)];
   }
 
   .btn-secondary {
-    @apply btn border border-line bg-raised text-ink hover:bg-[var(--bg-sunken)];
+    @apply btn border border-line bg-raised text-ink hover:border-[var(--primary)] hover:bg-[var(--tint)];
   }
 
   .btn-danger {
     @apply btn border border-[var(--bad-fg)] bg-raised text-[var(--bad-fg)] hover:bg-[var(--bad-bg)];
   }
 
+  /* Still 44px tall: "small" only trims padding and type. */
   .btn-sm {
-    @apply min-h-[36px] px-3 py-1.5 text-xs;
+    @apply px-4 text-sm;
   }
 
   .input {
-    @apply w-full rounded-lg border border-line bg-raised px-3 py-2 text-base text-ink placeholder:text-muted sm:text-sm;
+    @apply min-h-[44px] w-full rounded-xl border border-line bg-raised px-3.5 py-2.5 text-base text-ink placeholder:text-muted;
+  }
+
+  .input:focus-visible {
+    outline-offset: 0;
   }
 
   .label {
-    @apply mb-1 block text-sm font-semibold text-ink;
+    @apply mb-1.5 block text-base font-semibold text-ink;
   }
 
   .hint {
-    @apply mt-1 text-xs text-muted;
+    @apply mt-1.5 text-sm text-muted;
+  }
+
+  .link {
+    @apply font-semibold text-[var(--accent)] underline;
+  }
+
+  .pill {
+    @apply inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-raised px-4 text-base font-semibold text-ink;
+  }
+
+  .pill[aria-current="true"],
+  .pill[aria-current="page"],
+  .pill[aria-checked="true"],
+  .pill[aria-selected="true"] {
+    @apply border-[var(--primary)] bg-[var(--primary)] text-[var(--on-primary)];
   }
 
   .placeholder-mark {
-    @apply rounded bg-[var(--warn-bg)] px-1 font-semibold text-[var(--warn-fg)] outline outline-1 outline-[var(--warn-fg)];
+    @apply rounded-md bg-[var(--warn-bg)] px-1 font-semibold text-[var(--warn-fg)] outline outline-1 outline-[var(--warn-fg)];
+  }
+
+  /* Page bottom padding so content clears the phone tab bar. */
+  .tabbar-pad {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 24px);
+  }
+
+  @media (min-width: 1024px) {
+    .tabbar-pad {
+      padding-bottom: 64px;
+    }
+  }
+
+  .scroll-row {
+    @apply flex gap-2 overflow-x-auto;
+    scrollbar-width: none;
+  }
+
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The one celebratory moment: hearts when she marks a job as applied. */
+@keyframes heart-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), -140px) scale(1.1) rotate(var(--rot));
+  }
+}
+
+.heart-burst {
+  animation: heart-rise 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart-burst {
+    animation: none;
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

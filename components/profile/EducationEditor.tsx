@@ -51,9 +51,9 @@ export function EducationEditor({ education, onDone }: { education: Education | 
   }
 
   return (
-    <li className="card p-4" onChange={() => setStatus({ kind: "idle" })}>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="sm:col-span-2">
+    <li className="card p-5" onChange={() => setStatus({ kind: "idle" })}>
+      <div className="grid gap-5 md:grid-cols-2">
+        <div className="md:col-span-2">
           <label className="label" htmlFor={`${idBase}-school`}>
             School
           </label>
@@ -102,7 +102,7 @@ export function EducationEditor({ education, onDone }: { education: Education | 
           />
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <button type="button" className="btn-primary btn-sm" disabled={pending} onClick={save}>
           {pending ? "Saving…" : "Save education"}
         </button>

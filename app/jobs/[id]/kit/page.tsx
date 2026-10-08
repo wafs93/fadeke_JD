@@ -11,6 +11,7 @@ import { JobActions } from "@/components/feed/JobActions";
 import { NgChip, ScamChip, ScoreBadge } from "@/components/feed/JobChips";
 import { Chip } from "@/components/Chip";
 import { sourceName } from "@/lib/util";
+import { BackIcon, HeartMark } from "@/components/Icons";
 import { ngEvidence } from "@/lib/feed";
 
 export const dynamic = "force-dynamic";
@@ -37,15 +38,16 @@ export default async function KitPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
-      <Link href={`/?job=${job.id}`} className="text-sm font-semibold underline">
-        ← Back to job
+      <Link href={`/?job=${job.id}`} className="btn-secondary">
+        <BackIcon className="h-5 w-5" />
+        Back to job
       </Link>
 
-      <header className="flex items-start gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <ScoreBadge score={match?.score ?? null} size="lg" />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-muted">Application kit</p>
-          <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{job.title}</h1>
+          <p className="text-sm font-semibold text-rose-strong">Application kit</p>
+          <h1 className="break-words text-[1.75rem] leading-tight sm:text-[2.25rem]">{job.title}</h1>
           <p className="text-muted">{job.company || "Company not named"}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <NgChip eligible={job.ng_eligible} reason={job.ng_reason} evidence={ngEvidence(job)} />
@@ -56,38 +58,38 @@ export default async function KitPage({ params }: { params: { id: string } }) {
       </header>
 
       {job.ng_eligible === false && (
-        <p role="alert" className="card border-2 border-[var(--bad-fg)] p-3 text-sm font-semibold text-[var(--bad-fg)]">
+        <p role="alert" className="rounded-2xl bg-[var(--bad-bg)] p-4 font-semibold text-[var(--bad-fg)]">
           ✕ This job is not open to applicants in Nigeria ({job.ng_reason}). It no longer appears in your feed.
         </p>
       )}
       {job.ng_eligible === null && (
-        <p role="alert" className="card border-2 border-[var(--warn-fg)] p-3 text-sm font-semibold text-[var(--warn-fg)]">
+        <p role="alert" className="rounded-2xl bg-[var(--warn-bg)] p-4 font-semibold text-[var(--warn-fg)]">
           ! Location not stated. Check the original post allows Nigeria before applying.
         </p>
       )}
 
       {job.scam_level === "high" && (
-        <p role="alert" className="card border-2 border-[var(--bad-fg)] p-3 text-sm font-semibold text-[var(--bad-fg)]">
+        <p role="alert" className="rounded-2xl bg-[var(--bad-bg)] p-4 font-semibold text-[var(--bad-fg)]">
           ✕ This post shows strong scam signs. Read the warnings on the job page before you spend time on it.
         </p>
       )}
 
-      <section className="card space-y-3 p-4">
-        <p className="text-sm">
+      <section className="card space-y-4 p-5">
+        <p>
           <strong>You stay in control.</strong> This desk never applies for you. Check and edit everything below, then apply
-          on the company&apos;s own site and press &quot;Mark as applied&quot;.
+          on the company&apos;s own site and tap &quot;I submitted it: mark as applied&quot;.
         </p>
-        <JobActions jobId={job.id} jobUrl={job.url} sourceLabel={sourceName(job.source)} stage={application?.stage ?? null} hasKit />
+        <JobActions jobId={job.id} jobUrl={job.url} sourceLabel={sourceName(job.source)} stage={application?.stage ?? null} hasKit showKitLink={false} />
       </section>
 
       {(missing.length > 0 || unconfirmed.length > 0) && (
-        <section className="card p-4 text-sm">
-          <h2 className="font-bold">About your profile</h2>
-          <ul className="mt-2 space-y-1">
+        <section className="card p-5">
+          <h2 className="text-xl">About your profile</h2>
+          <ul className="mt-2 space-y-2">
             {missing.length > 0 && (
               <li>
                 <Chip tone="warn">Missing</Chip> {missing.join(", ")}. These show as [placeholders].{" "}
-                <Link href="/profile" className="underline">
+                <Link href="/profile" className="link">
                   Update profile
                 </Link>
               </li>
@@ -102,20 +104,22 @@ export default async function KitPage({ params }: { params: { id: string } }) {
       )}
 
       {!kit && job.ng_eligible === false ? null : !kit ? (
-        <section className="card p-6">
-          <h2 className="text-lg font-bold">No kit yet</h2>
-          <p className="mt-1 text-sm text-muted">
-            The kit has a tailored CV, a cover letter and answers to common questions, written only from your saved profile.
+        <section className="card flex flex-col items-start gap-3 p-6">
+          <HeartMark className="h-8 w-8 text-rose" />
+          <h2 className="text-2xl">Let&apos;s build your kit</h2>
+          <p className="text-muted">
+            You&apos;ll get a tailored CV, a cover letter and answers to common questions, written only from your saved profile.
+            You can edit everything before you send it.
           </p>
-          <div className="mt-4">
+          <div className="mt-1 w-full sm:w-auto">
             <BuildKitButton jobId={job.id} />
           </div>
         </section>
       ) : (
         <>
           {checks && (checks.unknownNumbers.length > 0 || checks.unconfirmedMentions.length > 0 || checks.unsupportedClaims.length > 0) && (
-            <section aria-labelledby="fact-heading" className="card border-2 border-[var(--bad-fg)] p-4 text-sm">
-              <h2 id="fact-heading" className="font-bold">
+            <section aria-labelledby="fact-heading" className="rounded-2xl bg-[var(--bad-bg)] p-5 text-[var(--bad-fg)]">
+              <h2 id="fact-heading" className="text-xl">
                 ✕ Check these facts
               </h2>
               <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -136,7 +140,7 @@ export default async function KitPage({ params }: { params: { id: string } }) {
                     These sentences claim things your profile does not say. Make them true for you, or delete them:
                     <ul className="mt-1 list-none space-y-1 pl-0">
                       {checks.unsupportedClaims.map((c) => (
-                        <li key={c} className="text-muted">
+                        <li key={c} className="break-words">
                           ! {c}
                         </li>
                       ))}

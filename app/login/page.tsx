@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { HeartMark } from "@/components/Icons";
+import { APP_NAME } from "@/lib/brand";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,14 +33,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="danfo-band border-b-[6px] border-[#111] bg-danfo px-4 py-6 text-[#111]">
-        <p className="mx-auto max-w-sm font-display text-2xl font-extrabold">Fadeke&apos;s Job Desk</p>
+    <div className="flex min-h-dvh flex-col">
+      <div className="border-b border-line bg-tint px-4 py-5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
+        <p className="mx-auto flex max-w-sm items-center gap-2 text-ink">
+          <HeartMark className="h-7 w-7 text-rose" />
+          <span className="font-display text-2xl">{APP_NAME}</span>
+        </p>
       </div>
       <div className="flex flex-1 items-start justify-center px-4 pt-10">
         <div className="card w-full max-w-sm p-6">
-          <h1 className="text-xl font-bold">Sign in</h1>
-          <p className="mt-1 text-sm text-muted">This desk is private. Use the account set up for you in Supabase.</p>
+          <h1 className="text-[2rem] leading-tight">Welcome back</h1>
+          <p className="mt-1 text-muted">Sign in to see today&apos;s jobs. This desk is private to you.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
@@ -71,7 +76,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p role="alert" className="rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-sm text-[var(--bad-fg)]">
+              <p role="alert" className="rounded-2xl bg-[var(--bad-bg)] px-4 py-3 text-[var(--bad-fg)]">
                 {error}
               </p>
             )}

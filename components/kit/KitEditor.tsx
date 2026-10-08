@@ -9,15 +9,16 @@ import { findPlaceholders } from "@/lib/util";
 
 type Field = "cv_text" | "cover_letter" | "answers_text";
 
-const SECTIONS: { field: Field; title: string; rows: number; hint: string }[] = [
+const SECTIONS: { field: Field; title: string; rows: number; hint: string; doc: "cv" | "cover" | "answers" }[] = [
   {
     field: "cv_text",
     title: "CV",
     rows: 22,
     hint: "## starts a section, ### a role, - a bullet. Keep that layout and the Word file stays neat.",
+    doc: "cv",
   },
-  { field: "cover_letter", title: "Cover letter", rows: 16, hint: "Leave a blank line between paragraphs." },
-  { field: "answers_text", title: "Answers to common questions", rows: 14, hint: "Copy each answer into the application form." },
+  { field: "cover_letter", title: "Cover letter", rows: 16, hint: "Leave a blank line between paragraphs.", doc: "cover" },
+  { field: "answers_text", title: "Answers", rows: 16, hint: "Copy each answer into the application form.", doc: "answers" },
 ];
 
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -25,7 +26,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   return (
     <button
       type="button"
-      className="btn-secondary btn-sm"
+      className="btn-secondary w-full sm:w-auto"
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
@@ -45,6 +46,7 @@ export function KitEditor({ kit, jobId }: { kit: Kit; jobId: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<SaveStatus>({ kind: "idle" });
+  const [tab, setTab] = useState<Field>("cv_text");
   const [texts, setTexts] = useState<Record<Field, string>>({
     cv_text: kit.cv_text,
     cover_letter: kit.cover_letter,
@@ -53,10 +55,12 @@ export function KitEditor({ kit, jobId }: { kit: Kit; jobId: string }) {
   const dirty =
     texts.cv_text !== kit.cv_text || texts.cover_letter !== kit.cover_letter || texts.answers_text !== kit.answers_text;
 
-  const livePlaceholders = useMemo(
-    () => SECTIONS.map((s) => ({ title: s.title, items: findPlaceholders(texts[s.field]) })).filter((p) => p.items.length),
+  const placeholders = useMemo(
+    () => SECTIONS.map((s) => ({ field: s.field, title: s.title, items: findPlaceholders(texts[s.field]) })),
     [texts]
   );
+  const anyPlaceholders = placeholders.some((p) => p.items.length);
+  const section = SECTIONS.find((s) => s.field === tab)!;
 
   function save() {
     startTransition(async () => {
@@ -67,84 +71,114 @@ export function KitEditor({ kit, jobId }: { kit: Kit; jobId: string }) {
   }
 
   return (
-    <div className="space-y-5">
-      {livePlaceholders.length > 0 && (
-        <section aria-labelledby="ph-heading" className="card border-2 border-[var(--warn-fg)] p-4">
-          <h2 id="ph-heading" className="font-bold">
+    <div className="space-y-4">
+      {anyPlaceholders && (
+        <section aria-labelledby="ph-heading" className="rounded-2xl bg-[var(--warn-bg)] p-5 text-[var(--warn-fg)]">
+          <h2 id="ph-heading" className="text-xl">
             ! Fill these in before you send
           </h2>
-          <ul className="mt-2 space-y-1 text-sm">
-            {livePlaceholders.map((p) => (
-              <li key={p.title}>
-                <span className="font-semibold">{p.title}:</span>{" "}
-                {p.items.map((it) => (
-                  <span key={it} className="placeholder-mark mr-1">
-                    {it}
-                  </span>
-                ))}
-              </li>
-            ))}
+          <ul className="mt-2 space-y-2">
+            {placeholders
+              .filter((p) => p.items.length)
+              .map((p) => (
+                <li key={p.title} className="break-words">
+                  <span className="font-semibold">{p.title}:</span>{" "}
+                  {p.items.map((it) => (
+                    <span key={it} className="placeholder-mark mr-1 inline-block">
+                      {it}
+                    </span>
+                  ))}
+                </li>
+              ))}
           </ul>
         </section>
       )}
 
-      <div className="no-print sticky top-0 z-10 -mx-4 flex flex-wrap items-center gap-2 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur sm:mx-0 sm:rounded-lg sm:border">
+      <div role="tablist" aria-label="Kit documents" className="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0">
+        {SECTIONS.map((s) => {
+          const count = placeholders.find((p) => p.field === s.field)?.items.length ?? 0;
+          return (
+            <button
+              key={s.field}
+              type="button"
+              role="tab"
+              id={`tab-${s.field}`}
+              aria-selected={tab === s.field}
+              aria-controls={`panel-${s.field}`}
+              className="pill"
+              onClick={() => setTab(s.field)}
+            >
+              {s.title}
+              {count > 0 && (
+                <span className="rounded-full bg-[var(--warn-bg)] px-2 text-xs text-[var(--warn-fg)]">
+                  {count} to fill
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <section
+        role="tabpanel"
+        id={`panel-${section.field}`}
+        aria-labelledby={`tab-${section.field}`}
+        className="card space-y-3 p-4 sm:p-5"
+      >
+        <label htmlFor={section.field} className="font-display block text-2xl">
+          {section.title}
+        </label>
+        <p id={`${section.field}-hint`} className="text-sm text-muted">
+          {section.hint}
+        </p>
+        <textarea
+          id={section.field}
+          aria-describedby={`${section.field}-hint`}
+          rows={section.rows}
+          className="input w-full font-mono leading-relaxed"
+          value={texts[section.field]}
+          onChange={(e) => {
+            setTexts((t) => ({ ...t, [section.field]: e.target.value }));
+            setStatus({ kind: "idle" });
+          }}
+        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <CopyButton text={texts[section.field]} label={section.title} />
+          {section.doc !== "answers" && (
+            <a
+              className="btn-secondary w-full sm:w-auto"
+              href={`/api/kits/${jobId}/docx?doc=${section.doc}`}
+              aria-disabled={dirty}
+              onClick={(e) => {
+                if (dirty) {
+                  e.preventDefault();
+                  window.alert("Save your changes first, so the Word file includes them.");
+                }
+              }}
+            >
+              Download Word file
+            </a>
+          )}
+          <a
+            className="btn-secondary w-full sm:w-auto"
+            href={`/jobs/${jobId}/kit/print?doc=${section.doc}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Print or save PDF
+          </a>
+        </div>
+      </section>
+
+      {/* Save stays in reach on phones, above the tab bar. */}
+      <div className="no-print sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom)+8px)] z-10 flex flex-wrap items-center gap-3 rounded-full border border-line bg-raised p-2 pl-4 shadow-[var(--shadow)] lg:bottom-4">
+        <span className="min-w-0 flex-1 text-sm font-semibold">
+          {dirty ? "• Unsaved changes" : <StatusText status={status} />}
+        </span>
         <button type="button" className="btn-primary" disabled={pending || !dirty} onClick={save}>
           {pending ? "Saving…" : "Save changes"}
         </button>
-        {dirty && <span className="text-sm font-semibold">• Unsaved changes</span>}
-        <StatusText status={dirty ? { kind: "idle" } : status} />
       </div>
-
-      {SECTIONS.map((s) => (
-        <section key={s.field} aria-labelledby={`${s.field}-h`} className="card p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id={`${s.field}-h`} className="text-lg font-bold">
-              <label htmlFor={s.field}>{s.title}</label>
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <CopyButton text={texts[s.field]} label={s.title} />
-              {s.field !== "answers_text" && (
-                <a
-                  className="btn-secondary btn-sm"
-                  href={`/api/kits/${jobId}/docx?doc=${s.field === "cv_text" ? "cv" : "cover"}`}
-                  aria-disabled={dirty}
-                  onClick={(e) => {
-                    if (dirty) {
-                      e.preventDefault();
-                      window.alert("Save your changes first, so the Word file includes them.");
-                    }
-                  }}
-                >
-                  Download .docx
-                </a>
-              )}
-              <a
-                className="btn-secondary btn-sm"
-                href={`/jobs/${jobId}/kit/print?doc=${s.field === "cv_text" ? "cv" : s.field === "cover_letter" ? "cover" : "answers"}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Print or save PDF
-              </a>
-            </div>
-          </div>
-          <p id={`${s.field}-hint`} className="hint mb-2">
-            {s.hint}
-          </p>
-          <textarea
-            id={s.field}
-            aria-describedby={`${s.field}-hint`}
-            rows={s.rows}
-            className="input font-mono text-sm leading-relaxed"
-            value={texts[s.field]}
-            onChange={(e) => {
-              setTexts((t) => ({ ...t, [s.field]: e.target.value }));
-              setStatus({ kind: "idle" });
-            }}
-          />
-        </section>
-      ))}
     </div>
   );
 }

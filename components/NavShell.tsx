@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SignOutButton } from "@/components/SignOutButton";
+import { HeartMark, JobsIcon, ProfileIcon, ShieldIcon, TrackerIcon } from "@/components/Icons";
+import { APP_NAME } from "@/lib/brand";
 
 const TABS = [
-  { href: "/", label: "Job feed" },
-  { href: "/tracker", label: "Tracker" },
-  { href: "/scam-check", label: "Scam check" },
-  { href: "/profile", label: "Profile" },
+  { href: "/", label: "Jobs", Icon: JobsIcon },
+  { href: "/tracker", label: "Tracker", Icon: TrackerIcon },
+  { href: "/scam-check", label: "Scam check", Icon: ShieldIcon },
+  { href: "/profile", label: "Profile", Icon: ProfileIcon },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -22,41 +24,46 @@ export function NavShell({ children }: { children: React.ReactNode }) {
   const bare = pathname === "/login" || pathname.endsWith("/print");
 
   if (bare) {
-    return <div className="min-h-screen bg-surface">{children}</div>;
+    return <div className="min-h-dvh bg-surface">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-surface text-ink">
+    <div className="min-h-dvh bg-surface text-ink">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-black"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-raised focus:px-4 focus:py-2 focus:text-ink"
       >
         Skip to content
       </a>
-      <header className="danfo-band no-print border-b-[6px] border-[#111] bg-danfo text-[#111]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 pt-3 sm:px-6">
-          <Link href="/" className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
-            Fadeke&apos;s Job Desk
+
+      <header className="no-print border-b border-line bg-tint" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:px-6 sm:py-3">
+          <Link href="/" className="flex min-h-[44px] items-center gap-2 text-ink">
+            <HeartMark className="h-6 w-6 text-rose" />
+            <span className="whitespace-nowrap font-display text-[1.25rem] leading-none min-[390px]:text-[1.375rem] sm:text-2xl">{APP_NAME}</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <ThemeToggle />
             <SignOutButton />
           </div>
         </div>
-        <nav aria-label="Main" className="mx-auto max-w-7xl overflow-x-auto px-2 sm:px-4">
-          <ul className="flex gap-1 py-2">
-            {TABS.map((tab) => {
-              const active = isActive(pathname, tab.href);
+
+        {/* Desktop and tablet: tabs under the name. Phones use the bottom bar. */}
+        <nav aria-label="Main" className="mx-auto hidden max-w-6xl px-4 pb-3 sm:px-6 lg:block">
+          <ul className="flex gap-2">
+            {TABS.map(({ href, label, Icon }) => {
+              const active = isActive(pathname, href);
               return (
-                <li key={tab.href}>
+                <li key={href}>
                   <Link
-                    href={tab.href}
+                    href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`block whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${
-                      active ? "bg-[#111] text-danfo" : "text-[#111] hover:bg-black/10"
+                    className={`flex min-h-[44px] items-center gap-2 rounded-full px-4 font-semibold ${
+                      active ? "bg-rose text-[var(--on-primary)]" : "text-ink hover:bg-raised"
                     }`}
                   >
-                    {tab.label}
+                    <Icon className="h-5 w-5" />
+                    {label}
                   </Link>
                 </li>
               );
@@ -64,9 +71,40 @@ export function NavShell({ children }: { children: React.ReactNode }) {
           </ul>
         </nav>
       </header>
-      <main id="main" className="mx-auto max-w-7xl px-4 pb-20 pt-5 sm:px-6">
+
+      <main id="main" className="tabbar-pad mx-auto max-w-6xl px-4 pt-5 sm:px-6">
         {children}
       </main>
+
+      <nav
+        aria-label="Main"
+        className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-line bg-raised lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <ul className="mx-auto grid h-[var(--tabbar-h)] max-w-xl grid-cols-4">
+          {TABS.map(({ href, label, Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <li key={href} className="h-full">
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex h-full flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
+                    active ? "text-rose-strong" : "text-muted"
+                  }`}
+                >
+                  <span
+                    className={`flex h-7 w-12 items-center justify-center rounded-full ${active ? "bg-tint" : ""}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </div>
   );
 }

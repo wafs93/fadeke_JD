@@ -94,10 +94,10 @@ export function ExperienceEditor({
   }
 
   return (
-    <li className="card p-4">
+    <li className="card p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="font-bold">{heading}</h3>
+          <h3 className="break-words text-lg">{heading}</h3>
           {experience && (
             <p className="text-sm text-muted">
               {formatDateRange(experience.start_date, experience.end_date, experience.current) || "Dates not set"}
@@ -126,7 +126,7 @@ export function ExperienceEditor({
       </div>
 
       {experience && !experience.verified && !open && (
-        <p className="mt-3 rounded-lg bg-[var(--warn-bg)] px-3 py-2 text-sm text-[var(--warn-fg)]">
+        <p className="mt-3 rounded-2xl bg-[var(--warn-bg)] px-4 py-3 text-[var(--warn-fg)]">
           Add the real dates and duties, then tick &quot;I confirm these details are correct&quot;. Until then, application
           kits leave this role&apos;s duties out.
         </p>
@@ -134,7 +134,7 @@ export function ExperienceEditor({
 
       {open && (
         <div id={`exp-${idBase}`} className="mt-4 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             <div>
               <label className="label" htmlFor={`${idBase}-title`}>
                 Job title
@@ -189,12 +189,12 @@ export function ExperienceEditor({
               />
             </div>
             <div className="flex flex-col justify-end gap-2">
-              <label className="flex min-h-[32px] items-center gap-2 text-sm">
-                <input type="checkbox" className="h-5 w-5" checked={current} onChange={(e) => setCurrent(e.target.checked)} />
+              <label className="flex min-h-[44px] items-center gap-3">
+                <input type="checkbox" className="h-5 w-5 accent-[var(--primary)]" checked={current} onChange={(e) => setCurrent(e.target.checked)} />
                 I work here now
               </label>
-              <label className="flex min-h-[32px] items-center gap-2 text-sm">
-                <input type="checkbox" className="h-5 w-5" checked={remote} onChange={(e) => setRemote(e.target.checked)} />
+              <label className="flex min-h-[44px] items-center gap-3">
+                <input type="checkbox" className="h-5 w-5 accent-[var(--primary)]" checked={remote} onChange={(e) => setRemote(e.target.checked)} />
                 Remote role
               </label>
             </div>
@@ -205,7 +205,7 @@ export function ExperienceEditor({
             <p className="hint mb-2">One line each. Tags are optional keywords that help match jobs.</p>
             <ul className="space-y-3">
               {bullets.map((b, i) => (
-                <li key={i} className="rounded-lg border border-line p-3">
+                <li key={i} className="rounded-2xl bg-sunken p-3">
                   <label className="sr-only" htmlFor={`${idBase}-b${i}`}>
                     Duty {i + 1}
                   </label>
@@ -217,7 +217,7 @@ export function ExperienceEditor({
                     onChange={(e) => updateBullet(i, { text: e.target.value })}
                   />
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <label className="text-xs font-semibold" htmlFor={`${idBase}-t${i}`}>
+                    <label className="text-sm font-semibold" htmlFor={`${idBase}-t${i}`}>
                       Tags
                     </label>
                     <input
@@ -247,7 +247,7 @@ export function ExperienceEditor({
             </button>
           </fieldset>
 
-          <label className="flex items-start gap-3 rounded-lg border-2 border-line p-3 text-sm">
+          <label className="flex items-start gap-3 rounded-2xl bg-tint p-4">
             <input
               type="checkbox"
               className="mt-0.5 h-5 w-5"
@@ -260,7 +260,7 @@ export function ExperienceEditor({
             </span>
           </label>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <button type="button" className="btn-primary" disabled={pending} onClick={save}>
               {pending ? "Saving…" : "Save experience"}
             </button>

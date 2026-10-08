@@ -1,10 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
+import { DM_Serif_Display, Figtree } from "next/font/google";
 import "./globals.css";
 import { NavShell } from "@/components/NavShell";
 
-const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display", display: "swap" });
-const body = Public_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const display = DM_Serif_Display({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  fallback: ["Georgia", "Times New Roman", "serif"],
+});
+const body = Figtree({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Fadeke's Job Desk",
@@ -15,7 +26,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#F2B705",
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FADCE6" },
+    { media: "(prefers-color-scheme: dark)", color: "#1E0F18" },
+  ],
 };
 
 const THEME_INIT_SCRIPT = `
@@ -35,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className={`${display.variable} ${body.variable} min-h-screen font-sans antialiased`}>
+      <body className={`${display.variable} ${body.variable} min-h-dvh font-sans antialiased`}>
         <NavShell>{children}</NavShell>
       </body>
     </html>

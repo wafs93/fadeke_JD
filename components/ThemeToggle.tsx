@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MoonIcon, SunIcon } from "@/components/Icons";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -25,9 +26,11 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={dark}
-      className="min-h-[36px] rounded-full border-2 border-[#111] px-3 text-xs font-semibold hover:bg-black/10"
+      className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-full px-2.5 text-sm font-semibold text-ink hover:bg-raised"
     >
-      {dark ? "Light mode" : "Dark mode"}
+      {dark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+      <span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
+      <span className="sr-only sm:hidden">{dark ? "Light mode" : "Dark mode"}</span>
     </button>
   );
 }

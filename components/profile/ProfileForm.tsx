@@ -47,10 +47,10 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
   const list = (items: string[] | undefined) => (items ?? []).join("\n");
 
   return (
-    <form onSubmit={onSubmit} onChange={() => setStatus({ kind: "idle" })} className="card space-y-5 p-4 sm:p-6">
-      <h2 className="text-lg font-bold">About you</h2>
+    <form onSubmit={onSubmit} onChange={() => setStatus({ kind: "idle" })} className="card space-y-6 p-5 sm:p-6">
+      <h2 className="text-2xl">About you</h2>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Field id="full_name" label="Full name (as on CV)">
           <input id="full_name" name="full_name" className="input" defaultValue={profile?.full_name ?? ""} />
         </Field>
@@ -95,7 +95,7 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
         <textarea id="summary" name="summary" rows={3} className="input" defaultValue={profile?.summary ?? ""} />
       </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Field id="target_titles" label="Job titles to look for" hint="One per line.">
           <textarea
             id="target_titles"
@@ -138,11 +138,14 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
         </Field>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Sticky so Save is always in reach on a phone, above the tab bar. */}
+      <div className="sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom)+8px)] z-10 -mx-2 flex items-center gap-3 rounded-full border border-line bg-raised p-2 pl-4 shadow-[var(--shadow)] lg:bottom-4">
+        <span className="min-w-0 flex-1 text-sm">
+          <StatusText status={status} />
+        </span>
         <button type="submit" className="btn-primary" disabled={pending}>
           {pending ? "Saving…" : "Save profile"}
         </button>
-        <StatusText status={status} />
       </div>
     </form>
   );

@@ -21,7 +21,7 @@ export function BuildKitButton({ jobId, rebuild = false }: { jobId: string; rebu
 
   return (
     <div className="space-y-2">
-      <button type="button" className={rebuild ? "btn-secondary" : "btn-primary"} disabled={pending} onClick={onClick}>
+      <button type="button" className={`${rebuild ? "btn-secondary" : "btn-primary"} w-full sm:w-auto`} disabled={pending} onClick={onClick}>
         {pending ? "Writing your kit…" : rebuild ? "Rebuild kit" : "Build application kit"}
       </button>
       {pending && (

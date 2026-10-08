@@ -39,13 +39,13 @@ export default async function TrackerPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-extrabold">Tracker</h1>
-        <p className="mt-1 text-sm text-muted">
+        <h1 className="text-[2rem] leading-tight sm:text-[2.5rem]">Your applications</h1>
+        <p className="mt-1 text-muted">
           Move each job along as things happen. Use the stage menu on a card, or drag it on a computer.
         </p>
       </div>
       {due.length > 0 && (
-        <p className="card flex flex-wrap items-center gap-2 p-3 text-sm">
+        <p className="card flex flex-wrap items-center gap-2 p-4">
           <Chip tone="warn">Follow up due</Chip>
           {due.length === 1 ? "1 application is" : `${due.length} applications are`} ready for a polite follow-up email:{" "}
           {due.map((c) => c.job.company || c.job.title).join(", ")}.
