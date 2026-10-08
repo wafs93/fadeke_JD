@@ -71,14 +71,24 @@ const RESTRICTIVE_DESCRIPTION = [
   /\bw-?2\b/i,
 ];
 
+// Office attendance makes a "worldwide" feed region meaningless for her.
+const OFFICE_REQUIRED = [
+  /\bhybrid\b[^.\n]{0,60}/i,
+  /\b\d(?:\s?[–-]\s?\d)? days? (?:per|a) week (?:in|at) (?:the|our) office\b/i,
+  /\b(?:work|working|based) (?:full[- ]time )?(?:from|in|at) our [A-Z][\w .]{1,40} office\b/,
+  /\b(?:on-?site|in-office) (?:role|position|work|presence)\b/i,
+];
+
 /**
  * Can someone in Lagos apply? Deterministic and conservative: true only when
  * the post says it is open worldwide or to Nigeria/Africa; false when it names
  * other countries only, or says so in the description; otherwise null
  * ("check the post").
  */
-export function checkNigeriaEligibility(regionText: string, description: string): Eligibility {
+export function checkNigeriaEligibility(regionText: string, description: string, title = ""): Eligibility {
   const region = regionText.toLowerCase().trim();
+  // Titles often carry the real limit, e.g. "Executive Assistant (Remote, UAE or Europe)".
+  const titleScope = (title.match(/\(([^)]*)\)|[-–—|]\s*([^-–—|]*remote[^-–—|]*)$/i) ?? []).slice(1).filter(Boolean).join(" ").toLowerCase();
   const desc = description.slice(0, 8000);
   const all = `${region}\n${desc.toLowerCase()}`;
 
@@ -88,12 +98,24 @@ export function checkNigeriaEligibility(regionText: string, description: string)
   }
 
   // Explicit mention of Nigeria or Africa in the stated region.
-  const africa = AFRICA_OK.find((p) => p !== "ng" && containsPhrase(region, p));
+  const africa = AFRICA_OK.find((p) => p !== "ng" && (containsPhrase(region, p) || containsPhrase(titleScope, p)));
   if (africa) return { eligible: true, reason: `Region includes ${africa === "lagos" ? "Lagos" : africa.replace(/\b\w/g, (c) => c.toUpperCase())}` };
 
   for (const re of RESTRICTIVE_DESCRIPTION) {
     const m = desc.match(re);
     if (m) return { eligible: false, reason: `Description limits location: "${m[0].trim()}"` };
+  }
+
+  if (titleScope && !AFRICA_OK.some((p) => p !== "ng" && containsPhrase(titleScope, p)) && !OPEN_WORLDWIDE.some((p) => containsPhrase(titleScope, p))) {
+    const named = NON_NG_REGIONS.concat(["uae", "dubai", "middle east", "gulf", "emea"]).filter((r) => containsPhrase(titleScope, r));
+    if (named.length > 0) return { eligible: false, reason: `Title limits location: "${titleScope.trim()}"` };
+  }
+
+  for (const re of OFFICE_REQUIRED) {
+    const m = desc.match(re);
+    if (m && !/\b(not|no|never) (?:a )?hybrid\b/i.test(m[0])) {
+      return { eligible: false, reason: `Needs office attendance: "${m[0].trim().slice(0, 80)}"` };
+    }
   }
 
   if (OPEN_WORLDWIDE.some((p) => containsPhrase(region, p))) {

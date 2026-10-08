@@ -18,7 +18,7 @@ export interface SourceSummary {
 
 /** Adds eligibility and scam fields to a raw job, ready to upsert. */
 export function enrichJob(job: RawJob) {
-  const ng = checkNigeriaEligibility(job.region_text, job.description);
+  const ng = checkNigeriaEligibility(job.region_text, job.description, job.title);
   const scam = assessScam(job);
   return {
     ...job,

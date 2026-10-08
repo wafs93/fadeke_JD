@@ -1,0 +1,41 @@
+name: Fetch jobs
+
+# Vercel Hobby crons run at most once a day, so this workflow fetches every
+# 6 hours. Each source still enforces its own minimum gap (see source_runs),
+# so slower sources such as Remotive and Himalayas simply skip some runs.
+# Scoring stays on the daily Vercel cron to keep OpenAI costs predictable.
+#
+# Repository secrets needed: APP_URL (e.g. https://your-app.vercel.app) and
+# CRON_SECRET (same value as in Vercel).
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: fetch-jobs
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call /api/cron/fetch-jobs
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${APP_URL:-}" || -z "${CRON_SECRET:-}" ]]; then
+            echo "::error::Set the APP_URL and CRON_SECRET repository secrets"
+            exit 1
+          fi
+          status=$(curl -sS --max-time 90 -o body.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${CRON_SECRET}" "${APP_URL%/}/api/cron/fetch-jobs")
+          echo "HTTP ${status}"
+          cat body.json; echo
+          # 207 means some sources failed but others saved jobs.
+          if [[ "$status" == "207" ]]; then echo "::warning::Some job sources failed; see body above"; fi
+          [[ "$status" -ge 200 && "$status" -lt 300 ]]

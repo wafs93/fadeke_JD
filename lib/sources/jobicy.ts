@@ -56,7 +56,7 @@ export const jobicy: JobSource = {
           company: (j.companyName ?? "").trim(),
           url: j.url,
           description: stripHtml(j.jobDescription || j.jobExcerpt),
-          region_text: (j.jobGeo ?? "").trim(),
+          region_text: (j.jobGeo ?? "").replace(/\s+/g, " ").trim(),
           posted_at: toIsoOrNull(j.pubDate),
           salary_text: salaryText(j),
         });

@@ -35,6 +35,12 @@ if (!seed.auth_email || seed.auth_email.startsWith("REPLACE_")) {
   fail(`set "auth_email" in ${file} to the login email of the Supabase user to seed`);
 }
 
+/** Shows "u***@example.com" so logs never carry the full address. */
+function maskEmail(email) {
+  const [user, domain] = String(email).split("@");
+  return `${user ? user[0] : ""}***@${domain ?? "?"}`;
+}
+
 const supabase = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
 async function findUserId(email) {
@@ -51,7 +57,9 @@ async function findUserId(email) {
 
 const userId = await findUserId(seed.auth_email);
 if (!userId) {
-  fail(`no Supabase Auth user with email ${seed.auth_email}. Create one in Authentication > Users, then re-run.`);
+  fail(
+    `no Supabase Auth user with email ${maskEmail(seed.auth_email)}. Create one in Authentication > Users (tick Auto Confirm), then re-run.`
+  );
 }
 
 const { data: existing } = await supabase.from("profiles").select("user_id").eq("user_id", userId).maybeSingle();

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed": "node --env-file=.env.local scripts/seed.mjs"
+    "seed": "node --env-file=.env.local scripts/seed.mjs",
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
+    "check:sources": "node --import tsx scripts/check-sources.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.5.2",
@@ -30,6 +32,7 @@
     "eslint-config-next": "14.2.35",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.13",
+    "tsx": "4.19.2",
     "typescript": "5.6.2"
   }
 }

@@ -30,7 +30,7 @@ export function ScamChecker() {
     const firstLine = post.trim().split("\n")[0] ?? "";
     setResult({
       scam: assessScam({ title: firstLine, company, description: post }),
-      ng: checkNigeriaEligibility("", post),
+      ng: checkNigeriaEligibility("", post, firstLine),
     });
   }
 

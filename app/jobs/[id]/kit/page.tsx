@@ -101,7 +101,7 @@ export default async function KitPage({ params }: { params: { id: string } }) {
         </section>
       ) : (
         <>
-          {checks && (checks.unknownNumbers.length > 0 || checks.unconfirmedMentions.length > 0) && (
+          {checks && (checks.unknownNumbers.length > 0 || checks.unconfirmedMentions.length > 0 || checks.unsupportedClaims.length > 0) && (
             <section aria-labelledby="fact-heading" className="card border-2 border-[var(--bad-fg)] p-4 text-sm">
               <h2 id="fact-heading" className="font-bold">
                 ✕ Check these facts
@@ -117,6 +117,18 @@ export default async function KitPage({ params }: { params: { id: string } }) {
                   <li>
                     Mentions a role you have not confirmed: <strong>{checks.unconfirmedMentions.join(", ")}</strong>. Confirm it on
                     the Profile page or remove it.
+                  </li>
+                )}
+                {checks.unsupportedClaims.length > 0 && (
+                  <li>
+                    These sentences claim things your profile does not say. Make them true for you, or delete them:
+                    <ul className="mt-1 list-none space-y-1 pl-0">
+                      {checks.unsupportedClaims.map((c) => (
+                        <li key={c} className="text-muted">
+                          ! {c}
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 )}
               </ul>

@@ -34,7 +34,7 @@ export function stripHtml(html: string | null | undefined): string {
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<li[^>]*>/gi, "\n• ")
-      .replace(/<\/(p|div|li|h[1-6]|ul|ol)>/gi, "\n")
+      .replace(/<\/(p|div|h[1-6]|ul|ol)>/gi, "\n")
       .replace(/<[^>]+>/g, " ")
   )
     .replace(/[ \t]+/g, " ")

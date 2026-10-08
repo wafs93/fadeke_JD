@@ -20,6 +20,19 @@ interface RemoteOkJob {
   url?: string;
 }
 
+/** Remote OK's API sometimes serves UTF-8 text that was decoded as Latin-1
+ * ("fÃ¼r" for "für"). Re-decode only when that pattern shows up. */
+export function fixMojibake(s: string | undefined): string {
+  if (!s) return "";
+  if (!/[ÃÂâ][\u0080-\u00ff]/.test(s)) return s;
+  try {
+    const fixed = Buffer.from(s, "latin1").toString("utf8");
+    return fixed.includes("\ufffd") ? s : fixed;
+  } catch {
+    return s;
+  }
+}
+
 function salaryText(min?: number, max?: number): string | null {
   if (!min && !max) return null;
   const fmt = (n: number) => `$${Math.round(n / 1000)}k`;
@@ -43,11 +56,11 @@ export const remoteok: JobSource = {
       jobs.push({
         source: "remoteok",
         external_id: String(j.id),
-        title: j.position.trim(),
-        company: (j.company ?? "").trim(),
+        title: fixMojibake(j.position).trim(),
+        company: fixMojibake(j.company).trim(),
         url,
-        description: stripHtml(j.description),
-        region_text: (j.location ?? "").trim(),
+        description: stripHtml(fixMojibake(j.description)),
+        region_text: fixMojibake(j.location).trim(),
         posted_at: toIsoOrNull(j.epoch ?? j.date),
         salary_text: salaryText(j.salary_min, j.salary_max),
       });

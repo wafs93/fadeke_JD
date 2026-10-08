@@ -51,8 +51,10 @@ npm run seed
 ### 4. Run
 
 ```bash
-npm run dev     # http://localhost:3000
-npm run build && npm run lint
+npm run dev            # http://localhost:3000
+npm test               # rules, parsers, CV composer and fact checks (no network)
+npm run lint && npm run build
+npm run check:sources  # one live call to each job source; writes nothing. Don't loop it.
 ```
 
 ### 5. Deploy (Vercel)
@@ -60,6 +62,7 @@ npm run build && npm run lint
 1. Import the repo and add the same env vars in **Project settings → Environment Variables**.
 2. [vercel.json](vercel.json) schedules three daily crons (UTC): fetch at 05:00, match at 06:00, digest at 07:00 (06:00 to 08:00 in Lagos). Vercel sends `Authorization: Bearer $CRON_SECRET` automatically. On the Hobby plan, each cron fires once a day at some point within its hour.
 3. To run a step by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<app>/api/cron/fetch`.
+4. **Fetching every 6 hours:** [.github/workflows/fetch-jobs.yml](.github/workflows/fetch-jobs.yml) calls `/api/cron/fetch-jobs` (an alias of `/api/cron/fetch`) every 6 hours. Add the repository secrets `APP_URL` and `CRON_SECRET` under **Settings → Secrets and variables → Actions**. Each source still enforces its own minimum gap, and scoring stays on the daily Vercel cron.
 
 The **Fetch new jobs** and **Score new jobs** buttons on the feed run the same steps on demand. They respect the same rate limits.
 
@@ -106,7 +109,9 @@ The sandbox I built this in had no outbound network, so the adapters are written
 - **Checks** ([lib/kit-checks.ts](lib/kit-checks.ts)) run on the saved text after every edit and list:
   - unfilled placeholders,
   - any number that appears in neither her profile nor the job post,
-  - any mention of an unconfirmed employer.
+  - any mention of an unconfirmed employer,
+  - claims the profile can't back up: availability, travel, office work, years of experience, pay agreement, inflated wording ("extensive experience", "proven track record"), and results such as "saved two hours a week",
+  - answers to "describe a time…" questions with no placeholder, so she confirms the story really happened.
 - Export: `.docx` for the CV and cover letter (placeholders are highlighted yellow), and a print-friendly page for PDF.
 
 ### Telegram digest (optional)
