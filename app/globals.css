@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f7f6f2;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #efede7;
+  --border: #dedbd2;
+  --text: #1a1a1a;
+  --text-muted: #5c5a55;
+  --focus: #1a1a1a;
+  --danfo: #f2b705;
+
+  --good-bg: #e3f4e8;
+  --good-fg: #145c2c;
+  --warn-bg: #fff1c7;
+  --warn-fg: #6b4a00;
+  --bad-bg: #fde4e1;
+  --bad-fg: #8f1d12;
+  --info-bg: #e3edfb;
+  --info-fg: #1c4587;
+  --neutral-bg: #ecebe6;
+  --neutral-fg: #3d3c38;
+}
+
+.dark {
+  --bg: #121212;
+  --bg-elevated: #1c1c1b;
+  --bg-sunken: #0c0c0c;
+  --border: #33322f;
+  --text: #f2f0ea;
+  --text-muted: #a9a69f;
+  --focus: #f2b705;
+
+  --good-bg: #123821;
+  --good-fg: #9fe3b5;
+  --warn-bg: #3d2f05;
+  --warn-fg: #ffd866;
+  --bad-bg: #44140f;
+  --bad-fg: #ffb3a8;
+  --info-bg: #142a4a;
+  --info-fg: #a9c8f5;
+  --neutral-bg: #2a2a28;
+  --neutral-fg: #d6d3cc;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.danfo-band :focus-visible {
+  outline-color: #111111;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-line bg-raised;
+  }
+
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Primary: black on danfo yellow, the same pairing as the header. */
+  .btn-primary {
+    @apply btn border-2 border-[#111] bg-danfo text-[#111] hover:bg-[#ffc927];
+  }
+
+  .btn-secondary {
+    @apply btn border border-line bg-raised text-ink hover:bg-[var(--bg-sunken)];
+  }
+
+  .btn-danger {
+    @apply btn border border-[var(--bad-fg)] bg-raised text-[var(--bad-fg)] hover:bg-[var(--bad-bg)];
+  }
+
+  .btn-sm {
+    @apply min-h-[36px] px-3 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line bg-raised px-3 py-2 text-base text-ink placeholder:text-muted sm:text-sm;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-semibold text-ink;
+  }
+
+  .hint {
+    @apply mt-1 text-xs text-muted;
+  }
+
+  .placeholder-mark {
+    @apply rounded bg-[var(--warn-bg)] px-1 font-semibold text-[var(--warn-fg)] outline outline-1 outline-[var(--warn-fg)];
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

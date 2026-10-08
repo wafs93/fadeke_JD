@@ -1,0 +1,44 @@
+{
+  "_comment": "Copy to seed.local.json (gitignored), replace the fake values, then run `npm run seed`. Contact details (email, phone) are NOT seeded; enter them on the Profile page.",
+  "auth_email": "jobseeker@example.com",
+  "profile": {
+    "full_name": "Ada Example",
+    "location": "Example City, Example Country",
+    "timezone": "WAT, UTC+1",
+    "target_titles": ["Virtual Assistant", "Administrative Assistant"],
+    "min_hourly_rate": null,
+    "summary": "Organised virtual assistant who supports small businesses with email, calendar and customer service.",
+    "skills": ["Email Management", "Calendar Organization", "Data Entry"],
+    "tools": ["Google Suite", "Microsoft Office"],
+    "languages": ["English (expert)"]
+  },
+  "experiences": [
+    {
+      "employer": "Example Studio",
+      "title": "Virtual Assistant",
+      "start_date": "2024-01-01",
+      "end_date": null,
+      "current": true,
+      "location": "Remote",
+      "remote": true,
+      "verified": true,
+      "bullets": [
+        { "text": "Managed the founder's inbox and calendar.", "tags": ["email", "calendar"] }
+      ]
+    },
+    {
+      "employer": "Example Unconfirmed Client",
+      "title": "Virtual Assistant",
+      "start_date": null,
+      "end_date": null,
+      "current": false,
+      "location": null,
+      "remote": true,
+      "verified": false,
+      "bullets": []
+    }
+  ],
+  "education": [
+    { "school": "Example University", "degree": "B.Sc", "field": "Example Field", "start_year": 2016, "end_year": 2020 }
+  ]
+}
