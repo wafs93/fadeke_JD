@@ -21,6 +21,7 @@ Next.js 14 (App Router) · TypeScript · Tailwind · Supabase (Postgres, Auth, R
 
 #### Migration notes
 
+- **003 (Add a job):** run [supabase/migrations/003_pasted_jobs.sql](supabase/migrations/003_pasted_jobs.sql). It adds `jobs.owner_id` and `jobs.content_hash`, and changes the jobs read policy to "public jobs, plus your own pasted ones". Until it's run, "Add a job" shows a message asking for it, and everything else works as before.
 - **002 (Nigeria evidence):** run [supabase/migrations/002_ng_evidence.sql](supabase/migrations/002_ng_evidence.sql), then `npm run reevaluate`. It adds `jobs.ng_evidence`, `ng_method` and `ng_checked_at`. Until then the app still works: the evidence quote is kept in `ng_reason`, but the AI location check is paused, because there is nowhere to record that a job was already checked.
 
 - `schema.sql` creates `profiles`, `experiences`, `education`, `jobs`, `matches`, `kits`, `applications`, plus a small `source_runs` table. `source_runs` stores the last fetch time per job source and enforces each provider's rate limit.
@@ -80,6 +81,11 @@ The **Fetch new jobs** and **Score new jobs** buttons on the feed run the same s
 | Jobicy | `jobicy.com/api/v2/remote-jobs` | 6 h (their guidance: at most hourly) |
 | Himalayas | `himalayas.app/jobs/api/search` | 12 h (their data refreshes daily) |
 
+| Greenhouse, Lever, Ashby, Workable | public job board APIs, one request per company in [config/companies.json](config/companies.json) | 6 h |
+| Working Nomads | `workingnomads.com/api/exposed_jobs/` (linked as "API" in their footer) | 6 h |
+
+- Company boards: edit [config/companies.json](config/companies.json) (`board` + `slug`) to add or remove companies. These boards only list jobs that are still open, so the 30-day age cutoff doesn't apply to them.
+- Skipped on purpose: Jooble (its API is for website publishers), Arbeitnow (Europe only), Jobspresso (its robots.txt disallows the feed URL).
 - No LinkedIn, Indeed or other scraping.
 - Every job links back to its original listing and shows the source name, as each provider's terms require.
 - Results are cached in `jobs`. Fetches inside a source's window are skipped.
@@ -97,6 +103,15 @@ The sandbox I built this in had no outbound network, so the adapters are written
 - The feed shows **only open jobs**, each with its evidence ("Open: 'work from anywhere'"). "Show jobs that need checking" adds unclear jobs with a warning. Closed and high-scam-risk jobs never appear, and only open jobs are scored with GPT-4o.
 - Himalayas is queried with `country=Nigeria`, so it returns jobs whose restrictions include Nigeria or that have none. A job with no restrictions is shown as "Worldwide (no location restrictions listed on Himalayas)".
 - `npm run reevaluate` re-checks every stored job (`-- --dry-run`, `-- --no-ai`). Run it after changing the rules.
+
+### Add a job (manual paste)
+
+For posts she finds on LinkedIn, X, Facebook, WhatsApp or by email, she uses **Add a job**: a button on the feed, and a floating button on phones.
+- The post goes through the same steps as fetched jobs: the eligibility rules, the small model only if the rules leave it unclear (quote required), the scam check, and GPT-4o scoring only if it's open and not high risk.
+- The link is saved for her to open later. **It is never fetched.**
+- Duplicates are caught with a SHA-256 hash of the normalised text.
+- Pasted posts have `jobs.owner_id` set, so RLS shows them only to her. They carry an "Added by you" chip.
+- The flow is in [lib/paste.ts](lib/paste.ts), with its database and model calls passed in, so it is unit-tested. This feature needs migration 003.
 
 ### Matching (GPT-4o)
 

@@ -103,6 +103,14 @@ export function SunIcon(p: IconProps) {
   );
 }
 
+export function PlusIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 5v14M5 12h14" />
+    </Svg>
+  );
+}
+
 export function ExternalIcon(p: IconProps) {
   return (
     <Svg {...p}>

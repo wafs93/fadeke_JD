@@ -37,6 +37,11 @@ export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: 
               <Chip tone="neutral" symbol={null}>
                 From {source}
               </Chip>
+              {job.owner_id && (
+                <Chip tone="info" symbol={null}>
+                  Added by you
+                </Chip>
+              )}
               {application && <Chip tone="info">{application.stage}</Chip>}
             </div>
           </div>
@@ -66,6 +71,7 @@ export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: 
             jobId={job.id}
             jobUrl={job.url}
             sourceLabel={source}
+            linkLabel={job.owner_id ? "Open your link" : undefined}
             stage={application?.stage ?? null}
             hasKit={hasKit}
           />
@@ -126,11 +132,18 @@ export function JobDetail({ item, hasKit, backHref }: { item: FeedItem; hasKit: 
             {job.description || "No description given."}
           </div>
           <p className="mt-2 text-sm text-muted">
-            Listing from{" "}
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="link">
-              {source}
-            </a>
-            . Always read the original post before applying.
+            {job.owner_id ? (
+              <>You added this post from {source}.</>
+            ) : (
+              <>
+                Listing from{" "}
+                <a href={job.url} target="_blank" rel="noopener noreferrer" className="link">
+                  {source}
+                </a>
+                .
+              </>
+            )}{" "}
+            Always read the original post before applying.
           </p>
         </section>
       </article>

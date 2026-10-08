@@ -5,6 +5,7 @@ import { chatJson } from "@/lib/openai";
 import { loadProfileBundle } from "@/lib/profile";
 import { profileFactsText } from "@/lib/facts";
 import type { Job } from "@/lib/types";
+import { hasColumn } from "@/lib/db-columns";
 
 const matchSchema = z.object({
   score: z.number().min(0).max(100),
@@ -43,6 +44,28 @@ ${job.description.slice(0, 7000)}`;
   return { ...result, score: Math.round(result.score) };
 }
 
+type ScorableJob = Pick<Job, "id" | "title" | "company" | "region_text" | "description" | "salary_text">;
+
+/** Scores one job against the profile facts and saves the match. Shared by
+ * the batch scorer and the "Add a job" flow. */
+export async function scoreAndSaveMatch(supabase: SupabaseClient, userId: string, facts: string, job: ScorableJob): Promise<MatchResult> {
+  const result = await scoreJob(facts, job);
+  const { error } = await supabase.from("matches").upsert(
+    {
+      user_id: userId,
+      job_id: job.id,
+      score: result.score,
+      reasons: result.reasons,
+      have: result.have,
+      gaps: result.gaps,
+      created_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,job_id" }
+  );
+  if (error) throw new Error(error.message);
+  return result;
+}
+
 export interface MatchRunSummary {
   scored: number;
   remaining: number;
@@ -59,16 +82,22 @@ export async function runMatchForUser(supabase: SupabaseClient, userId: string, 
   const facts = profileFactsText(bundle);
 
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  let jobsQuery = supabase
+    .from("jobs")
+    .select("id, title, company, region_text, description, salary_text, ng_eligible, scam_level, posted_at")
+    // Only jobs she can apply for from Nigeria; never pay to score the rest.
+    .eq("ng_eligible", true)
+    .neq("scam_level", "high")
+    .gte("fetched_at", since)
+    .order("posted_at", { ascending: false, nullsFirst: false })
+    .limit(500);
+  // Jobs pasted by one user are private to them. RLS enforces this for the
+  // user's own client; the cron's admin client needs the filter spelled out.
+  if (await hasColumn(supabase, "jobs", "owner_id")) {
+    jobsQuery = jobsQuery.or(`owner_id.is.null,owner_id.eq.${userId}`);
+  }
   const [{ data: jobs, error: jobsError }, { data: matched }] = await Promise.all([
-    supabase
-      .from("jobs")
-      .select("id, title, company, region_text, description, salary_text, ng_eligible, scam_level, posted_at")
-      // Only jobs she can apply for from Nigeria; never pay to score the rest.
-      .eq("ng_eligible", true)
-      .neq("scam_level", "high")
-      .gte("fetched_at", since)
-      .order("posted_at", { ascending: false, nullsFirst: false })
-      .limit(500),
+    jobsQuery,
     supabase.from("matches").select("job_id").eq("user_id", userId),
   ]);
   if (jobsError) return { scored: 0, remaining: 0, errors: [jobsError.message] };
@@ -81,20 +110,7 @@ export async function runMatchForUser(supabase: SupabaseClient, userId: string, 
 
   for (const job of batch) {
     try {
-      const result = await scoreJob(facts, job);
-      const { error } = await supabase.from("matches").upsert(
-        {
-          user_id: userId,
-          job_id: job.id,
-          score: result.score,
-          reasons: result.reasons,
-          have: result.have,
-          gaps: result.gaps,
-          created_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,job_id" }
-      );
-      if (error) throw new Error(error.message);
+      await scoreAndSaveMatch(supabase, userId, facts, job);
       scored++;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

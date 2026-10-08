@@ -4,10 +4,23 @@ import { remoteok } from "@/lib/sources/remoteok";
 import { weworkremotely } from "@/lib/sources/weworkremotely";
 import { jobicy } from "@/lib/sources/jobicy";
 import { himalayas } from "@/lib/sources/himalayas";
+import { ashby, greenhouse, lever, workable } from "@/lib/sources/ats";
+import { workingnomads } from "@/lib/sources/workingnomads";
 
 // Only official APIs and public RSS feeds. No LinkedIn, Indeed or other sites
 // whose terms forbid automated access.
-export const ALL_SOURCES: JobSource[] = [remotive, remoteok, weworkremotely, jobicy, himalayas];
+export const ALL_SOURCES: JobSource[] = [
+  remotive,
+  remoteok,
+  weworkremotely,
+  jobicy,
+  himalayas,
+  greenhouse,
+  lever,
+  ashby,
+  workable,
+  workingnomads,
+];
 
 /** Sources enabled by JOB_SOURCES (comma-separated ids); all when blank. */
 export function enabledSources(): JobSource[] {

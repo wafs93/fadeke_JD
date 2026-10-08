@@ -6,7 +6,7 @@ import { RunButtons } from "@/components/feed/RunButtons";
 import { JobDetail } from "@/components/feed/JobDetail";
 import { NgChip, ScamChip, ScoreBadge } from "@/components/feed/JobChips";
 import { Chip } from "@/components/Chip";
-import { FilterIcon, HeartMark } from "@/components/Icons";
+import { FilterIcon, HeartMark, PlusIcon } from "@/components/Icons";
 import { lagosPartOfDay, OWNER_FIRST_NAME } from "@/lib/brand";
 import { formatPostedAgo, sourceName, todayInLagos } from "@/lib/util";
 
@@ -105,7 +105,13 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
             </h1>
             <p className="mt-1 text-muted">{summary}</p>
           </div>
-          <RunButtons />
+          <div className="flex flex-col gap-2">
+            <RunButtons />
+            <Link href="/jobs/add" className="btn-secondary hidden lg:inline-flex">
+              <PlusIcon className="h-5 w-5" />
+              Add a job
+            </Link>
+          </div>
         </section>
 
         {/* Filters: an expandable row on phones, inline on desktop. */}
@@ -145,6 +151,10 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
                 Tap &quot;Fetch new jobs&quot; to look now. New jobs also arrive on their own a few times a day, and only ones open
                 to applicants in Nigeria appear here.
               </p>
+              <Link href="/jobs/add" className="btn-secondary">
+                <PlusIcon className="h-5 w-5" />
+                Add a job you found
+              </Link>
               {!showUnclear && unclearCount > 0 && (
                 <Link href={href({ ...base, check: "1" })} className="link">
                   Look at {unclearCount} {unclearCount === 1 ? "job" : "jobs"} that need checking
@@ -174,6 +184,11 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           <NgChip eligible={job.ng_eligible} reason={job.ng_reason} evidence={ngEvidence(job)} />
                           <ScamChip level={job.scam_level} />
+                          {job.owner_id && (
+                            <Chip tone="info" symbol={null}>
+                              Added by you
+                            </Chip>
+                          )}
                           {application && <Chip tone="info">{application.stage}</Chip>}
                         </div>
                       </div>
@@ -197,6 +212,29 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
           )}
         </section>
       </div>
+
+      {/* Floating "Add a job" on phones, above the tab bar. */}
+      {!selected && (
+        <Link
+          href="/jobs/add"
+          className="btn-primary fixed right-4 z-30 shadow-[var(--shadow)] lg:hidden"
+          style={{ bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px)" }}
+        >
+          <PlusIcon className="h-5 w-5" />
+          Add a job
+        </Link>
+      )}
+      {/* Floating "Add a job" on phones, above the tab bar. */}
+      {!selected && (
+        <Link
+          href="/jobs/add"
+          className="btn-primary fixed right-4 z-30 shadow-[var(--shadow)] lg:hidden"
+          style={{ bottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px)" }}
+        >
+          <PlusIcon className="h-5 w-5" />
+          Add a job
+        </Link>
+      )}
     </div>
   );
 }

@@ -72,6 +72,9 @@ export interface Job {
   ng_evidence?: string | null;
   ng_method?: "rules" | "ai" | null;
   ng_checked_at?: string | null;
+  /** Added by migration 003: set when a user pasted the post in themselves. */
+  owner_id?: string | null;
+  content_hash?: string | null;
   scam_score: number;
   scam_flags: ScamFlag[];
   scam_level: ScamLevel;

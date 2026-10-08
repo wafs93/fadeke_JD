@@ -158,7 +158,18 @@ export const SOURCE_NAMES: Record<string, string> = {
   weworkremotely: "We Work Remotely",
   jobicy: "Jobicy",
   himalayas: "Himalayas",
-  pasted: "Pasted post",
+  greenhouse: "Greenhouse",
+  lever: "Lever",
+  ashby: "Ashby",
+  workable: "Workable",
+  workingnomads: "Working Nomads",
+  // Posts she pasted in herself ("Add a job").
+  linkedin: "LinkedIn",
+  x: "X",
+  facebook: "Facebook",
+  whatsapp: "WhatsApp",
+  email: "Email",
+  other: "Other",
 };
 
 export function sourceName(source: string): string {

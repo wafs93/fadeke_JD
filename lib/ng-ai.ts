@@ -4,6 +4,7 @@ import { z } from "zod";
 import { chatJson, MODEL_SMALL } from "@/lib/openai";
 import { checkNigeriaEligibility, quoteSupportsOpen, statusToEligible, type Eligibility, type NgStatus } from "@/lib/eligibility";
 import { mapWithConcurrency } from "@/lib/util";
+import { hasColumn } from "@/lib/db-columns";
 
 const verdictSchema = z.object({
   status: z.enum(["open", "closed", "unclear"]),
@@ -64,8 +65,7 @@ export async function classifyUnclearJob(job: { title: string; company: string; 
 
 /** True once migration 002 (ng_evidence, ng_method, ng_checked_at) has run. */
 export async function hasNgColumns(admin: SupabaseClient): Promise<boolean> {
-  const { error } = await admin.from("jobs").select("ng_method").limit(1);
-  return !error;
+  return hasColumn(admin, "jobs", "ng_method");
 }
 
 export interface AiCheckSummary {

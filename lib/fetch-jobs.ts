@@ -127,7 +127,7 @@ export async function runFetch(): Promise<{ ok: boolean; sources: SourceSummary[
         const kept = raw.filter((j) => {
           if (seen.has(j.external_id)) return false;
           seen.add(j.external_id);
-          if (j.posted_at && new Date(j.posted_at).getTime() < cutoff) return false;
+          if (!source.listsOnlyOpenJobs && j.posted_at && new Date(j.posted_at).getTime() < cutoff) return false;
           return isRelevantTitle(j.title, extraTitles);
         });
 

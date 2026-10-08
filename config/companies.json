@@ -1,0 +1,19 @@
+{
+  "_comment": "Company job boards to watch. board: greenhouse | lever | ashby | workable. slug: the company's board name in that system's public URL (e.g. boards.greenhouse.io/<slug>, jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>, apply.workable.com/<slug>). Every entry below was checked live on 2026-10-08. Only titles that pass the VA/admin/support/social media/coordinator filter are kept.",
+  "companies": [
+    { "board": "greenhouse", "slug": "gitlab", "name": "GitLab" },
+    { "board": "greenhouse", "slug": "canonical", "name": "Canonical" },
+    { "board": "greenhouse", "slug": "mozilla", "name": "Mozilla" },
+    { "board": "greenhouse", "slug": "customerio", "name": "Customer.io" },
+    { "board": "greenhouse", "slug": "invisibletech", "name": "Invisible Technologies" },
+    { "board": "lever", "slug": "superside", "name": "Superside" },
+    { "board": "lever", "slug": "toptal", "name": "Toptal" },
+    { "board": "ashby", "slug": "andela", "name": "Andela" },
+    { "board": "ashby", "slug": "zapier", "name": "Zapier" },
+    { "board": "ashby", "slug": "1password", "name": "1Password" },
+    { "board": "ashby", "slug": "posthog", "name": "PostHog" },
+    { "board": "ashby", "slug": "helpscout", "name": "Help Scout" },
+    { "board": "workable", "slug": "cloudfactory", "name": "CloudFactory" },
+    { "board": "workable", "slug": "remofirst", "name": "RemoFirst" }
+  ]
+}

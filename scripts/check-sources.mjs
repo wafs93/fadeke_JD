@@ -14,16 +14,26 @@ async function load(file, name) {
   return mod[name] ?? mod.default?.[name];
 }
 
-const [remotive, remoteok, weworkremotely, jobicy, himalayas, isRelevantTitle] = await Promise.all([
-  load("sources/remotive", "remotive"),
-  load("sources/remoteok", "remoteok"),
-  load("sources/weworkremotely", "weworkremotely"),
-  load("sources/jobicy", "jobicy"),
-  load("sources/himalayas", "himalayas"),
-  load("relevance", "isRelevantTitle"),
-]);
+const [remotive, remoteok, weworkremotely, jobicy, himalayas, greenhouse, lever, ashby, workable, workingnomads, isRelevantTitle] =
+  await Promise.all([
+    load("sources/remotive", "remotive"),
+    load("sources/remoteok", "remoteok"),
+    load("sources/weworkremotely", "weworkremotely"),
+    load("sources/jobicy", "jobicy"),
+    load("sources/himalayas", "himalayas"),
+    load("sources/ats", "greenhouse"),
+    load("sources/ats", "lever"),
+    load("sources/ats", "ashby"),
+    load("sources/ats", "workable"),
+    load("sources/workingnomads", "workingnomads"),
+    load("relevance", "isRelevantTitle"),
+  ]);
 
-const sources = [remotive, remoteok, weworkremotely, jobicy, himalayas];
+// `npm run check:sources -- greenhouse,lever` checks only those sources.
+const only = (process.argv[2] ?? "").split(",").filter(Boolean);
+const sources = [remotive, remoteok, weworkremotely, jobicy, himalayas, greenhouse, lever, ashby, workable, workingnomads].filter(
+  (s) => !only.length || only.includes(s.id)
+);
 let failures = 0;
 
 for (const source of sources) {

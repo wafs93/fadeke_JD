@@ -34,6 +34,21 @@ export const DEFAULT_TITLE_PHRASES = [
   "receptionist",
   "chat support",
   "email support",
+  // Wider families: admin, support, social media and any coordinator role.
+  "administrative",
+  "admin",
+  "office manager",
+  "office administrator",
+  "executive support",
+  "support agent",
+  "support associate",
+  "support advocate",
+  "support analyst",
+  "customer success associate",
+  "customer service",
+  "community manager",
+  "social media",
+  "coordinator",
 ];
 
 // Words that make a title a poor fit regardless of the phrases above.
@@ -56,6 +71,13 @@ const REJECT_PHRASES = [
   "pharmacy",
   "teacher",
   "driver",
+  "systems administrator",
+  "system administrator",
+  "database administrator",
+  "network",
+  "clinical",
+  "nursing",
+  "sales",
 ];
 
 export function isRelevantTitle(title: string, extraPhrases: string[] = []): boolean {

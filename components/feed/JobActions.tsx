@@ -15,6 +15,7 @@ export function JobActions({
   stage,
   hasKit,
   showKitLink = true,
+  linkLabel,
 }: {
   jobId: string;
   jobUrl: string;
@@ -23,6 +24,8 @@ export function JobActions({
   hasKit: boolean;
   /** False on the kit page itself. */
   showKitLink?: boolean;
+  /** Overrides "View on {source}", e.g. "Open your link" for pasted posts. */
+  linkLabel?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -51,11 +54,13 @@ export function JobActions({
             {hasKit ? "Open application kit" : "Build application kit"}
           </Link>
         )}
-        <a href={jobUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary w-full sm:w-auto">
-          View on {sourceLabel}
-          <ExternalIcon className="h-4 w-4" />
-          <span className="sr-only">(opens in a new tab)</span>
-        </a>
+        {jobUrl && (
+          <a href={jobUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary w-full sm:w-auto">
+            {linkLabel ?? `View on ${sourceLabel}`}
+            <ExternalIcon className="h-4 w-4" />
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
+        )}
         {stage === null && !justApplied && (
           <button
             type="button"

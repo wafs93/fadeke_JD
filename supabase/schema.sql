@@ -96,6 +96,11 @@ create index if not exists jobs_ng_eligible_idx on jobs (ng_eligible, posted_at 
 alter table jobs add column if not exists ng_evidence text;
 alter table jobs add column if not exists ng_method text;
 alter table jobs add column if not exists ng_checked_at timestamptz;
+-- 003: posts pasted in by a user are private to them.
+alter table jobs add column if not exists owner_id uuid references auth.users (id) on delete cascade;
+alter table jobs add column if not exists content_hash text;
+create unique index if not exists jobs_owner_content_hash_idx on jobs (owner_id, content_hash) where owner_id is not null;
+create index if not exists jobs_owner_idx on jobs (owner_id) where owner_id is not null;
 
 -- ---------------------------------------------------------------------------
 -- source_runs (fetch cache / rate-limit bookkeeping, one row per source)
@@ -191,7 +196,8 @@ begin
 end $$;
 
 drop policy if exists "signed-in read" on jobs;
-create policy "signed-in read" on jobs for select to authenticated using (true);
+create policy "signed-in read" on jobs for select to authenticated
+  using (owner_id is null or owner_id = auth.uid());
 
 drop policy if exists "signed-in read" on source_runs;
 create policy "signed-in read" on source_runs for select to authenticated using (true);
