@@ -1,5 +1,5 @@
 {
-  "_comment": "Company job boards to watch. board: greenhouse | lever | ashby | workable. slug: the company's board name in that system's public URL (e.g. boards.greenhouse.io/<slug>, jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>, apply.workable.com/<slug>). Every entry below was checked live on 2026-10-08 or 2026-10-14. Only titles that pass the VA/admin/support/social media/coordinator filter are kept.",
+  "_comment": "Company job boards to watch. board: greenhouse | lever | ashby | workable. slug: the company's board name in that system's public URL (e.g. boards.greenhouse.io/<slug>, jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>, apply.workable.com/<slug>). Entries were checked live on 2026-10-19. Only titles that pass the VA/admin/support/social media/coordinator filter are kept.",
   "companies": [
     { "board": "greenhouse", "slug": "gitlab", "name": "GitLab" },
     { "board": "greenhouse", "slug": "canonical", "name": "Canonical" },
@@ -7,18 +7,22 @@
     { "board": "greenhouse", "slug": "customerio", "name": "Customer.io" },
     { "board": "greenhouse", "slug": "invisibletech", "name": "Invisible Technologies" },
     { "board": "greenhouse", "slug": "boldly", "name": "Boldly" },
+    { "board": "greenhouse", "slug": "athena", "name": "Athena" },
     { "board": "greenhouse", "slug": "webflow", "name": "Webflow" },
     { "board": "lever", "slug": "superside", "name": "Superside" },
     { "board": "lever", "slug": "toptal", "name": "Toptal" },
+    { "board": "lever", "slug": "contentsquare", "name": "Contentsquare" },
     { "board": "ashby", "slug": "andela", "name": "Andela" },
     { "board": "ashby", "slug": "zapier", "name": "Zapier" },
     { "board": "ashby", "slug": "1password", "name": "1Password" },
     { "board": "ashby", "slug": "posthog", "name": "PostHog" },
     { "board": "ashby", "slug": "helpscout", "name": "Help Scout" },
     { "board": "ashby", "slug": "buffer", "name": "Buffer" },
+    { "board": "ashby", "slug": "hubstaff", "name": "Hubstaff" },
     { "board": "ashby", "slug": "supabase", "name": "Supabase" },
     { "board": "ashby", "slug": "circle", "name": "Circle" },
     { "board": "workable", "slug": "cloudfactory", "name": "CloudFactory" },
-    { "board": "workable", "slug": "remofirst", "name": "RemoFirst" }
+    { "board": "workable", "slug": "remofirst", "name": "RemoFirst" },
+    { "board": "workable", "slug": "supportyourapp", "name": "SupportYourApp" }
   ]
 }
